@@ -1,6 +1,6 @@
 import { View, Text, Image } from 'react-native'
 import React from 'react'
-import { MyStatusBar } from '../constants/config'
+import { MyStatusBar, WIDTH } from '../constants/config'
 import { TouchableOpacity } from 'react-native-gesture-handler'
 import { BACK } from '../constants/imagepath'
 import { WHITE } from '../constants/color'
@@ -11,7 +11,7 @@ export default function Remarks({ navigation }) {
         <>
             <MyStatusBar backgroundColor={WHITE} barStyle={'dark-content'} />
             <View style={{ flex: 1, backgroundColor: 'white' }}>
-                <View style={{ backgroundColor: 'white' }}>
+                <View style={{ backgroundColor: 'white', width: WIDTH * 0.2 }}>
                     <TouchableOpacity onPress={() => {
                         navigation.navigate("StartScreen")
                     }}>

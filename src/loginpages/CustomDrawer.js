@@ -84,35 +84,35 @@ export default function CustomDrawer({ navigation }) {
     return (
         <>
             <MyStatusBar backgroundColor={WHITE} barStyle={'dark-content'} />
-            <ScrollView>
-                <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+            {/* <ScrollView> */}
+            <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
 
-                    <View style={{ marginVertical: 20, alignSelf: 'flex-end', marginRight: 20 }}>
-                        <TouchableOpacity onPress={() => {
-                            navigation.dispatch(DrawerActions.closeDrawer());
-                        }}>
-                            <Image
-                                source={CROSS}
-                                style={{ height: 60, width: 60 }}
-                            />
-                        </TouchableOpacity>
-                    </View>
-                    <Image
-                        source={ELLIPSE}
-                        style={{ width: 120, height: 120, marginTop: 50 }}
-                    />
-                    <View style={{ justifyContent: 'center', alignItems: 'center', margin: 20 }}>
-                        <Text style={styles.textStyle}>{userdata?.employee?.employee_name}</Text>
-                        <Text style={styles.textStyle}>Emp ID : {userdata?.employee?.employee_no} </Text>
-                    </View>
-                    {/* Options View */}
-                    <FlatList
-                        style={{ padding: 50 }}
-                        data={Profiledata}
-                        renderItem={ProfileView}
-                    />
+                <View style={{ marginVertical: 20, alignSelf: 'flex-end', marginRight: 20 }}>
+                    <TouchableOpacity onPress={() => {
+                        navigation.dispatch(DrawerActions.closeDrawer());
+                    }}>
+                        <Image
+                            source={CROSS}
+                            style={{ height: 60, width: 60 }}
+                        />
+                    </TouchableOpacity>
                 </View>
-            </ScrollView>
+                <Image
+                    source={ELLIPSE}
+                    style={{ width: 120, height: 120, marginTop: 50 }}
+                />
+                <View style={{ justifyContent: 'center', alignItems: 'center', margin: 20 }}>
+                    <Text style={styles.textStyle}>{userdata?.employee?.employee_name}</Text>
+                    <Text style={styles.textStyle}>Emp ID : {userdata?.employee?.employee_no} </Text>
+                </View>
+                {/* Options View */}
+                <FlatList
+                    style={{ padding: 50 }}
+                    data={Profiledata}
+                    renderItem={ProfileView}
+                />
+            </View>
+            {/* </ScrollView> */}
         </>
     )
 }

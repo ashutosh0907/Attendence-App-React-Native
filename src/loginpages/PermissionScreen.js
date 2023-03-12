@@ -36,10 +36,12 @@ export default function PermissionScreen({ navigation }) {
         }
         getUserData()
         getStatus();
-        const id = setInterval(() => {
-            getLocation();
-            wifiChecking();
-        }, 3000)
+        getLocation();
+        wifiChecking();
+        // const id = setInterval(() => {
+        //     getLocation();
+        //     wifiChecking();
+        // }, 100)
     }, [])
 
 
@@ -80,7 +82,7 @@ export default function PermissionScreen({ navigation }) {
         let startStatus = await getObjByKey('startStatus');
         let wifiandlocationStatus = await getObjByKey('wifiStart');
         // console.log("Start Status : ", typeof (startStatus.isStarted), "wifi and locationStatus", typeof (wifiandlocationStatus.wifi), typeof (wifiandlocationStatus.location));
-        if (startStatus.isStarted && wifiandlocationStatus.wifi && wifiandlocationStatus.location) {
+        if (startStatus?.isStarted && wifiandlocationStatus.wifi && wifiandlocationStatus.location) {
             navigation.navigate("DrawerStack")
         }
     }
@@ -101,6 +103,7 @@ export default function PermissionScreen({ navigation }) {
             // console.log('granted', granted);
             if (granted === 'granted') {
                 setNetInfo(true);
+                storeObjByKey('permission', netinfo);
                 return true;
             } else {
                 return false;
@@ -111,30 +114,59 @@ export default function PermissionScreen({ navigation }) {
     };
 
     // function to check permissions and get Location
+    // const getLocation = () => {
+    //     const result = requestLocationPermission();
+    //     result.then(res => {
+    //         if (res) {
+    //             Geolocation.getCurrentPosition(
+    //                 position => {
+    //                     setLocation(position);
+    //                     setLocationEnabled(true);
+    //                 },
+    //                 error => {
+    //                     setLocation(false);
+    //                     console.log("inide err")
+    //                     setLocationEnabled(false);
+    //                 },
+    //                 { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000 },
+    //             );
+    //         }
+    //     });
+    // };
+
     const getLocation = () => {
         const result = requestLocationPermission();
         result.then(res => {
             if (res) {
-                Geolocation.getCurrentPosition(
-                    position => {
-                        setLocation(position);
-                        setLocationEnabled(true);
-                    },
-                    error => {
-                        setLocation(false);
-                        console.log("inide err")
-                        setLocationEnabled(false);
-                    },
-                    { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000 },
-                );
+                try {
+                    Geolocation.getCurrentPosition(
+                        position => {
+                            setLocation(position);
+                            setLocationEnabled(true);
+                        },
+                        error => {
+                            setLocation(false);
+                            console.log("inside error");
+                            setLocationEnabled(false);
+                        },
+                        { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000 }
+                    );
+                } catch (error) {
+                    console.log("Error getting location: ", error);
+                }
             }
         });
     };
 
+
     const wifiChecking = () => {
+        console.log('wifi')
         NetInfo.fetch().then(state => {
             if (state.type == 'wifi') {
+                console.log('wifi')
                 setWifi(true);
+            } else {
+                setWifi(false);
             }
         });
     }
@@ -202,7 +234,8 @@ export default function PermissionScreen({ navigation }) {
                         </View>
                         <View>
                             <TouchableOpacity onPress={() => {
-                                Linking.openSettings();
+                                // Linking.openSettings();
+                                wifiChecking();
                             }} style={{ width: WIDTH * 0.7, height: 45, backgroundColor: 'white', marginTop: 10, alignItems: 'center', borderRadius: 10 }}>
                                 <Text style={{ fontSize: 20, marginTop: 10, color: 'blue', fontWeight: "500" }}>WIFI</Text>
                             </TouchableOpacity>

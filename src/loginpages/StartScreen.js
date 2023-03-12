@@ -2,7 +2,7 @@ import { View, Text, Image, Alert, Modal, StyleSheet, Pressable } from 'react-na
 import React, { useEffect, useState } from 'react'
 import { SPLASH, MENU } from "../constants/imagepath";
 import { ScrollView, TouchableOpacity } from 'react-native';
-import { MyStatusBar, WIDTH } from '../constants/config';
+import { HEIGHT, MyStatusBar, WIDTH } from '../constants/config';
 import { WHITE } from '../constants/color';
 import BackgroundService from 'react-native-background-actions';
 import Geolocation from 'react-native-geolocation-service';
@@ -24,7 +24,7 @@ export default function StartScreen() {
     const [time, setTime] = useState(new Date().toLocaleTimeString());
     const [date, setDate] = useState(new Date().toLocaleDateString());
     const [startstop, setStartstop] = useState(true);
-    const [isStart, setIsStart] = useState(1)
+    const [isStart, setIsStart] = useState(1);
     const dispatch = useDispatch();
     const [isbrake, setIsBrake] = useState(false);
     const [islunchbrake, setIsLunchBrake] = useState(false);
@@ -32,18 +32,21 @@ export default function StartScreen() {
     const [checkStart, setCheckIsStart] = useState(false);
     const [modalVisible, setModalVisible] = useState(false);
     const [ismodalopen, setIsModalOpen] = useState(false);
-    const [res, setRes] = useState()
+    const [res, setRes] = useState();
+    const [wifi, setWifi] = useState(false);
+    const [locationenabled, setLocationEnabled] = useState(false);
+    const [loadermodalVisible, setloadermodalVisible] = useState(false);
 
     useEffect(() => {
         async function getStartStatus() {
             let startStatus = await getObjByKey('startStatus');
             // console.log("start status : ", startStatus)
-            setCheckIsStart(startStatus.isStarted)
+            setCheckIsStart(startStatus?.isStarted)
             let normalBrake = await getObjByKey('normalBrake');
             setIsBrake(normalBrake)
             let lunchBrake = await getObjByKey('lunchBrake');
             setIsLunchBrake(lunchBrake)
-            setStartstop(!startStatus.isStarted)
+            setStartstop(!startStatus?.isStarted)
         }
         getStartStatus();
     }, [])
@@ -62,23 +65,79 @@ export default function StartScreen() {
     }, []);
 
 
+    const getLocation = () => {
+        const result = requestLocationPermission();
+        result.then(res => {
+            if (res) {
+                try {
+                    Geolocation.getCurrentPosition(
+                        position => {
+                            setLocationEnabled(true);
+                        },
+                        error => {
+                            console.log("inside error on start screen");
+                            setLocationEnabled(false);
+                        },
+                        { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000 }
+                    );
+                } catch (error) {
+                    console.log("Error getting location: ", error);
+                }
+            }
+        });
+    };
 
-    const getLatLongGateway = () => {
-        NetworkInfo.getGatewayIPAddress().then(defaultGateway => {
-            gateway = defaultGateway;
-        }).catch((e) => {
-            console.log(e)
-        })
-        Geolocation.getCurrentPosition(
-            position => {
-                latitude = position.coords.latitude;
-                longitude = position.coords.longitude;
-            },
-            error => {
 
-            },
-            { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000 },
-        );
+    const wifiChecking = () => {
+        console.log('wifi');
+        return new Promise((resolve, reject) => {
+            NetInfo.fetch().then(state => {
+                if (state.type === 'wifi') {
+                    console.log('wifi');
+                    setWifi(true);
+                } else {
+                    setWifi(false);
+                }
+            }).catch(error => {
+                reject(error);
+            });
+        });
+    };
+
+
+    //  Getting Latitude and Longitude from this below code
+    const getLatLongGateway = async () => {
+        try {
+            NetworkInfo.getGatewayIPAddress().then(defaultGateway => {
+                gateway = defaultGateway;
+            }).catch((e) => {
+                console.log(e)
+            })
+        } catch (e) {
+            console.log(e);
+        }
+        try {
+            let permission = getObjByKey('permission');
+            if (permission) {
+                Geolocation.getCurrentPosition(
+                    position => {
+                        if (position) {
+                            latitude = position?.coords?.latitude;
+                            longitude = position?.coords?.longitude;
+                        }
+                    },
+                    (error) => {
+                        Alert.alert("Turn on the Location");
+                        console.log("Error in getting latitude longitude", error.code, "---", error.message)
+                    },
+                    { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000 },
+                );
+            }
+        } catch (e) {
+            console.log(e);
+        }
+        console.log("lattttttitude ------------------", latitude)
+        console.log("longggggitude ------------------", longitude)
         return [latitude, longitude, gateway]
     }
 
@@ -86,8 +145,9 @@ export default function StartScreen() {
     // startTime() is called whenever user clicks on START on UI
     const startTime = async () => {
         const url = `${BASE_URL}addAttendance?_format=json`;
-        let getlatlongGateway = getLatLongGateway();
-        // console.log(getlatlongGateway[2]);
+        let getlatlongGateway = await getLatLongGateway();
+        console.log("start time latttttttitude----------------", getlatlongGateway[0]);
+        console.log("start time longitude----------------", getlatlongGateway[1]);
         const obj = {
             start: isStart,
             attendance_type: 1,
@@ -95,6 +155,7 @@ export default function StartScreen() {
             lng: getlatlongGateway[1],
             gateway: getlatlongGateway[2]
         }
+        console.log(url)
         POSTNETWORK(url, obj, true).then(res => {
             console.log('res', res);
             if (res.code == 200) {
@@ -107,6 +168,8 @@ export default function StartScreen() {
                     isStarted: true
                 }
                 storeObjByKey('startStatus', startStatus);
+            } else if (res.message === 'Network is not same') {
+                Alert.alert('Connect to the office Wifi');
             } else {
                 Alert.alert('Your Attendece Is Already Marked For Today');
             }
@@ -121,7 +184,8 @@ export default function StartScreen() {
     // handleBrake() called whenever user clicks on Take a Brake in the UI
     const handleBrake = async () => {
         const url = `${BASE_URL}addAttendance?_format=json`;
-        let getlatlongGateway = getLatLongGateway();
+        let getlatlongGateway = await getLatLongGateway();
+        console.log("handle brake latttttttitude----------------", getlatlongGateway[0]);
         const obj = {
             start: isbrake ? 0 : 1,
             attendance_type: 3,
@@ -136,12 +200,12 @@ export default function StartScreen() {
                 //Storing status of normal brake in Async-Storage
                 storeObjByKey('normalBrake', !isbrake);
                 setIsBrake(!isbrake)
-
                 if (!isbrake)
                     stopBackgroundService()
                 else
                     startBackgroundService()
-
+            } else if (res.message === 'Network is not same') {
+                Alert.alert('Connect to the office Wifi');
             }
         }).catch(err => {
             console.log("ERROR", err);
@@ -152,7 +216,8 @@ export default function StartScreen() {
     // handleLunchBrake() called whenever user clicks on Take Lunch Brake in the UI
     const handleLunchBrake = async () => {
         const url = `${BASE_URL}addAttendance?_format=json`;
-        let getlatlongGateway = getLatLongGateway();
+        let getlatlongGateway = await getLatLongGateway();
+        console.log("handle lunch brake latttttttitude----------------", getlatlongGateway[0]);
         const obj = {
             start: islunchbrake ? 0 : 1,
             attendance_type: 2,
@@ -169,8 +234,10 @@ export default function StartScreen() {
                 storeObjByKey("lunchBrake", !islunchbrake)
                 if (!islunchbrake)
                     stopBackgroundService()
-                else
+                else // end lunchbreak on press
                     startBackgroundService()
+            } else if (res.message === 'Network is not same') {
+                Alert.alert('Connect to the office Wifi');
             }
             else {
                 Alert.alert("You can have only one Lunch Brake")
@@ -181,7 +248,9 @@ export default function StartScreen() {
     }
 
     const logoutTime = async () => {
-        let getlatlongGateway = getLatLongGateway();
+        setloadermodalVisible(true);
+        let getlatlongGateway = await getLatLongGateway();
+        console.log("log out time latttttttitude----------------", getlatlongGateway[0]);
         const url = `${BASE_URL}addAttendance?_format=json`;
         const obj = {
             start: 0,
@@ -194,6 +263,7 @@ export default function StartScreen() {
         POSTNETWORK(url, obj, true).then(async (res) => {
             console.log('res', res);
             if (res.code == 200) {
+                setloadermodalVisible(false)
                 console.log("SUCCESS")
                 setIsStart(1)
                 stopBackgroundService();
@@ -212,27 +282,22 @@ export default function StartScreen() {
                 await storeObjByKey('lunchBrake', false);
                 setIsLunchBrake(false)
                 setStartstop(true);
+
+            } else if (res.message === 'Network is not same') {
+                setloadermodalVisible(false)
+                Alert.alert('Connect to the office Wifi');
             }
         }).catch(err => {
             console.log("ERROR", err);
         })
     }
 
-    // const checkLocation = async () => {
-    //     Geolocation.getCurrentPosition(
-    //         position => {
-    //         },
-    //         error => {
-    //             setLatitude(false);
-    //             setLongitude(false);
-    //         },
-    //         { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000 },
-    //     );
-    // }
 
     const pulseCheck = async () => {
+        console.log("Inside Pulse Check")
         const url = `${BASE_URL}checkLocation?_format=json`;
-        let getlatlongGateway = getLatLongGateway();
+        let getlatlongGateway = await getLatLongGateway();
+        console.log("pulse check latttttttitude----------------", getlatlongGateway[0]);
         const obj = {
             lat: getlatlongGateway[0],
             lng: getlatlongGateway[1],
@@ -241,7 +306,7 @@ export default function StartScreen() {
         POSTNETWORK(url, obj, true).then(res => {
             console.log('res', res);
             if (res.code == 200) {
-                console.log("sUCCESS SSSSSSSSSSSSSSS");
+                console.log("SUCCESS SSSSSSSSSSSSSSS");
             }
             else {
                 console.log("IN ELSE GOING TO HANDLE BRAKE");
@@ -249,19 +314,25 @@ export default function StartScreen() {
                 handleBrake();
             }
         }).catch(err => {
-
+            console.log('err');
         })
     }
+
+
     const veryIntensiveTask = async (taskDataArguments) => {
         const { delay } = taskDataArguments;
-        await new Promise(async (resolve) => {
-            for (let i = 0; BackgroundService.isRunning(); i++) {
-                await BackgroundService.updateNotification({ taskDesc: 'Attendify Is Running ' });
-                await sleep(300000);
-                pulseCheck();
-                // console.log(new Date())
-            }
-        });
+
+        try {
+            await new Promise(async (resolve) => {
+                for (let i = 0; BackgroundService.isRunning(); i++) {
+                    await BackgroundService.updateNotification({ taskDesc: 'Attendify Is Running ' });
+                    await sleep(300000);
+                    pulseCheck();
+                }
+            });
+        } catch (error) {
+            console.log("Error in veryIntensiveTask: ", error);
+        }
     };
 
     const options = {
@@ -280,11 +351,21 @@ export default function StartScreen() {
     };
 
     const startBackgroundService = async () => {
-        await BackgroundService.start(veryIntensiveTask, options);
-    }
+        try {
+            console.log("background service started---------------------------");
+            await BackgroundService.start(veryIntensiveTask, options);
+        } catch (error) {
+            console.log("Error starting background service: ", error);
+        }
+    };
+
     const stopBackgroundService = async () => {
-        console.log("Stopped")
-        await BackgroundService.stop();
+        try {
+            console.log("Stopped")
+            await BackgroundService.stop();
+        } catch (error) {
+            console.log("Error stopping background service: ", error);
+        }
     }
 
 
@@ -317,14 +398,14 @@ export default function StartScreen() {
                     }}>
                     <View style={styles.centeredView}>
                         <View style={styles.modalView}>
-                            <View style={{ padding: 10, margin: 10 }}>{res && res.map((record, index) => {
-                                return <View>
-                                    <Text>{getHeading(record.attendance_type)}</Text>
+                            <ScrollView style={{ padding: 10, margin: 10 }}>{res && res.map((record, index) => {
+                                return <View key={index}>
+                                    <Text style={{ color: 'black' }}>{getHeading(record.attendance_type)}</Text>
                                     <Text style={{ color: getColor(record.attendance_type), margin: 10 }}>
                                         {index + 1} Start: {moment(record.attendance_start).format("hh:mm:ss") + " "} End:{moment(record.attendance_end).format("hh:mm:ss")}
                                     </Text>
                                 </View>
-                            })}</View>
+                            })}</ScrollView>
                             <Pressable
                                 style={[styles.button, styles.buttonClose]}
                                 onPress={() => setModalVisible(!modalVisible)}>
@@ -333,31 +414,51 @@ export default function StartScreen() {
                         </View>
                     </View>
                 </Modal>
+                <Modal
+                    animationType="fade"
+                    transparent={true}
+                    visible={loadermodalVisible}
+                    onRequestClose={() => {
+                        // setModalVisible(!modalVisible);
+                    }}>
+                    <View style={styles.centeredView}>
+                        <Image
+                            style={{ height: 100, width: 100 }}
+                            source={LOADER}
+                        />
+                    </View>
+                </Modal>
 
                 <ScrollView style={{ backgroundColor: 'white' }}>
-                    <View style={{ flex: 1, marginTop: 70, flexDirection: 'row', justifyContent: 'center', width: WIDTH }}>
-                        <Image
-                            source={SPLASH}
-                            style={{ width: 78, height: 78, }}
-                        />
-                        <View style={{ justifyContent: 'center', }}>
-                            <Text style={{ color: 'black', fontSize: 20, fontWeight: '400' }}>Hello, {userdata?.employee?.employee_name}</Text>
-                            <Text style={{ color: 'black', fontSize: 20 }}>Emp. ID  : {userdata?.employee?.employee_no}</Text>
-                        </View>
-                        <View style={{ justifyContent: 'center' }}>
-                            <TouchableOpacity onPress={openDrawer}>
-                                <Image
-                                    source={MENU}
-                                    style={{ flex: 1, width: 40, height: 40, justifyContent: 'center', }}
-                                />
-                            </TouchableOpacity>
+                    <View style={{ flex: 1, marginTop: 70, flexDirection: 'row', justifyContent: 'center', width: WIDTH * 0.9 }}>
+                        <View style={{ flexDirection: 'row', justifyContent: 'space-evenly' }}>
+                            <View style={{ flexDirection: 'row', justifyContent: 'space-evenly', width: WIDTH }}>
+                                <View style={{ marginHorizontal: 10 }}>
+                                    <Image
+                                        source={SPLASH}
+                                        style={{ width: 78, height: 78, }}
+                                    />
+                                </View>
+                                <View style={{ justifyContent: 'center', }}>
+                                    <Text style={{ color: 'black', fontSize: 20, fontWeight: '400' }}>Hello, {userdata?.employee?.employee_name}</Text>
+                                    <Text style={{ color: 'black', fontSize: 20 }}>Emp. ID  : {userdata?.employee?.employee_no}</Text>
+                                </View>
+                                <View style={{ justifyContent: 'center' }}>
+                                    <TouchableOpacity onPress={openDrawer}>
+                                        <Image
+                                            source={MENU}
+                                            style={{ flex: 1, width: 40, height: 40, justifyContent: 'center', }}
+                                        />
+                                    </TouchableOpacity>
+                                </View>
+                            </View>
                         </View>
                     </View>
                     <View style={{ flex: 1, justifyContent: 'center', width: WIDTH, alignSelf: "center", alignItems: "center", marginTop: 20 }}>
                         <Text style={{ fontSize: 15 }}>“Start your day, log your attendance, and</Text>
                         <Text style={{ fontSize: 15 }}>manage all your attendance any time.”</Text>
                     </View>
-                    <View style={{ flexDirection: 'row', width: WIDTH * 0.95, alignItems: 'center', justifyContent: 'space-between', alignSelf: 'center' }}>
+                    <View style={{ flexDirection: 'row', width: WIDTH * 0.9, alignItems: 'center', justifyContent: 'space-between', alignSelf: 'center' }}>
                         <Text style={{ marginTop: 60, fontSize: 20, color: 'black' }}>Date : {date}</Text>
                         <Text style={{ marginTop: 60, fontSize: 20, color: 'green' }}>Time : {time}</Text>
                     </View>
@@ -365,9 +466,8 @@ export default function StartScreen() {
                         {startstop ? <TouchableOpacity
                             style={{ width: 202, height: 51, backgroundColor: '#35CC00', marginTop: 70, alignItems: 'center', alignSelf: "center", borderRadius: 10, }}
                             onPress={() => {
+                                console.log("Starrrrrrrrrrrrrrrrrrrrrrrt");
                                 startTime();
-
-                                // checkLocation();
                             }}
                         >
                             <Text style={{ alignContent: 'center', justifyContent: 'center', fontSize: 30, marginTop: 5, color: 'white' }}>START</Text>
@@ -424,15 +524,15 @@ const styles = StyleSheet.create({
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
-        marginTop: 22,
+        marginVertical: HEIGHT * 0.2,
     },
     modalView: {
-        height: 800,
-        width: 400,
+        height: HEIGHT * 0.8,
+        width: WIDTH * 0.9,
         margin: 20,
-        backgroundColor: '#EDB900',
+        backgroundColor: '#dedcdc',
         borderRadius: 20,
-        padding: 35,
+        padding: 30,
         alignItems: 'center',
         shadowColor: '#000',
         shadowOffset: {
@@ -445,9 +545,10 @@ const styles = StyleSheet.create({
     },
     button: {
         marginTop: 20,
-        borderRadius: 20,
+        borderRadius: 10,
         padding: 10,
         elevation: 2,
+        width: WIDTH * 0.5,
     },
     buttonOpen: {
         backgroundColor: '#F194FF',

@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Button, Modal, TouchableOpacity, View, TextInput, Text, StyleSheet, Image, ImageBackground, ScrollView, Alert, Keyboard, ToastAndroid } from "react-native";
+import { Button, Modal, TouchableOpacity, View, TextInput, Text, StyleSheet, Image, ImageBackground, ScrollView, Alert, Keyboard, ToastAndroid, BackHandler } from "react-native";
 import { BACKGROUNDBLACK, BLACK, GRAY, WHITE } from "../constants/color";
 import { HEIGHT, mod, MyStatusBar, WIDTH } from "../constants/config";
 import { IMAGEBACKGROUND, SPLASH, PHONE, BACK, PINK, LOADER } from "../constants/imagepath";
@@ -9,6 +9,7 @@ import { BASE_URL } from "../constants/url";
 import { useDispatch } from "react-redux";
 import { checkuserToken } from "../redux/actions/auth";
 import { storeObjByKey } from "../utils/Storage";
+import { useFocusEffect } from "@react-navigation/native";
 
 
 
@@ -23,11 +24,50 @@ export default Login = ({ navigation }) => {
     const [num2, setNum2] = useState('');
     const [num3, setNum3] = useState('');
     const [num4, setNum4] = useState('');
+
+    const [counter, setCounter] = useState(30);
     const ref1 = useRef('');
     const ref2 = useRef('');
     const ref3 = useRef('');
     const ref4 = useRef('');
     const dispatch = useDispatch();
+
+    useEffect(() => {
+        const timer = counter > 0 && setInterval(() => setCounter(counter - 1), 1000);
+        return () => clearInterval(timer);
+    })
+
+
+
+    useFocusEffect(() => {
+        const backAction = () => {
+            if (page == 0) {
+                BackHandler.exitApp();
+            } else if (page == 1) {
+                setErr('');
+                Alert.alert('', 'Do you want to change your mobile number ?', [
+                    {
+                        text: 'Cancel',
+                        onPress: () => console.log('Cancel Pressed'),
+                        style: 'cancel',
+                    },
+                    {
+                        text: 'OK',
+                        onPress: () => {
+                            setPage(0);
+                        },
+                    },
+                ]);
+            }
+            return true;
+        };
+        const backHandler = BackHandler.addEventListener(
+            'hardwareBackPress',
+            backAction,
+        );
+        return () => backHandler.remove();
+    });
+
 
     const VerifyOTP = () => {
         const url = `${BASE_URL}verifyOTP?_format=json`;
@@ -82,8 +122,8 @@ export default Login = ({ navigation }) => {
     const SigninView = () => {
         return (
             <>
-                <ScrollView>
-                    <View style={{ backgroundColor: 'white', width: WIDTH, height: 1000, justifyContent: 'center', alignItems: 'center' }}>
+                <ScrollView showsVerticalScrollIndicator={false}>
+                    <View style={{ ...Styles.mainView }}>
                         {/* MODAL START------------------------------------------------------------------------------------------------ */}
                         <Modal
                             animationType="fade"
@@ -100,23 +140,25 @@ export default Login = ({ navigation }) => {
                             </View>
                         </Modal>
                         {/* MODAL END--------------------------------------------------------------------------------------------------- */}
-                        <View style={{ width: 56, height: 30 }}>
-                            <Text style={{ fontSize: 20, color: 'black' }}>Login</Text>
-                        </View>
                         <View style={{ justifyContent: 'center', alignItems: 'center' }}>
-                            <Image
-                                source={SPLASH}
-                                style={{ height: 102, width: 102, marginRight: 12, marginTop: 10 }}
-                            />
-                        </View>
-                        <View style={{ alignItems: 'center' }}>
-                            <Text style={{ fontSize: 30, color: 'black' }}>Attendify</Text>
+                            <View style={{ width: 56, height: 30 }}>
+                                <Text style={{ fontSize: 20, color: 'black' }}>Login</Text>
+                            </View>
+                            <View style={{ justifyContent: 'center', alignItems: 'center' }}>
+                                <Image
+                                    source={SPLASH}
+                                    style={{ height: 102, width: 102, marginRight: 12, marginTop: 10 }}
+                                />
+                            </View>
+                            <View style={{ alignItems: 'center' }}>
+                                <Text style={{ fontSize: 30, color: 'black' }}>Attendify</Text>
+                            </View>
                         </View>
                         <View style={{ marginTop: 20, alignItems: 'center' }}>
                             <Text style={{ color: 'black' }}>Login to your account to log your</Text>
                             <Text style={{ color: 'black' }}>attendence</Text>
                         </View>
-                        <View style={{ flex: 0.8, width: WIDTH, height: 560, backgroundColor: '#FFDC61', marginTop: 40, borderRadius: 40, alignItems: 'center' }}>
+                        <View style={{ flex: 0.8, width: WIDTH, height: 10, backgroundColor: '#FFDC61', marginTop: 40, borderRadius: 40, alignItems: 'center' }}>
                             {/* Yellow Box */}
                             <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', backgroundColor: 'white', width: 302, height: 48, marginTop: 50, borderRadius: 10 }}>
                                 <View style={{ paddingRight: 20 }}>
@@ -169,7 +211,7 @@ export default Login = ({ navigation }) => {
         return (
             <>
                 <MyStatusBar backgroundColor={WHITE} barStyle={'dark-content'} />
-                <ScrollView>
+                <ScrollView showsVerticalScrollIndicator={false}>
                     <View style={{ backgroundColor: 'white', width: WIDTH, height: 1000, justifyContent: 'center', alignItems: 'center' }}>
                         <View style={{ alignItems: 'center', width: WIDTH, height: 60, flexDirection: 'row' }}>
                             <View style={{ marginLeft: 20 }}>
@@ -326,11 +368,24 @@ export default Login = ({ navigation }) => {
                             </View>
                             <View style={{ alignItems: 'center', marginTop: 100 }}>
                                 <Text style={{ color: 'black' }}>Didn’t receive OTP?</Text>
-                                <Text style={{ color: 'black' }}>wait 30 sec</Text>
+                                <Text></Text>
                                 <TouchableOpacity onPress={() => {
                                     sendOTP();
                                 }}>
-                                    <Text style={{ color: 'black', fontSize: 15, fontWeight: '700' }}>Resend OTP</Text>
+                                    <Text style={{ alignSelf: 'center', color: BLACK }}> Wait for 00:{counter == 0 ? "00" : counter} sec</Text>
+                                    {counter == 0 ? <Text
+                                        onPress={() => {
+                                            sendOTP();
+                                        }}
+                                        style={{
+                                            fontFamily: 'Roboto-Regular',
+                                            margin: 5,
+                                            color: 'red',
+                                            alignSelf: 'center',
+                                            fontSize: 15
+                                        }}>
+                                        Resend OTP
+                                    </Text> : null}
                                 </TouchableOpacity>
                             </View>
 
@@ -356,6 +411,13 @@ export default Login = ({ navigation }) => {
 }
 
 const Styles = StyleSheet.create({
+    mainView: {
+        backgroundColor: 'white',
+        width: WIDTH,
+        height: HEIGHT * 1.2,
+        justifyContent: 'center',
+        alignItems: 'center'
+    },
     touchableOpacityStyles: {
         backgroundColor: 'blue',
         color: 'red',

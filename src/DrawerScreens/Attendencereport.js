@@ -4,15 +4,17 @@ import DatePicker from 'react-native-date-picker'
 import moment from 'moment'
 import { POSTNETWORK } from '../utils/Network'
 import { BASE_URL } from '../constants/url'
-import { MyStatusBar } from '../constants/config'
+import { HEIGHT, MyStatusBar, WIDTH } from '../constants/config'
 import { WHITE } from '../constants/color'
-import { BACK } from '../constants/imagepath'
+import { BACK, LOADER } from '../constants/imagepath'
 import StartScreen from '../loginpages/StartScreen'
+import { ScrollView } from 'react-native-gesture-handler'
 
 
 export default function Attendencereport({ navigation }) {
     const [date, setDate] = useState(new Date())
     const [modalVisible, setModalVisible] = useState(false);
+    const [loadermodalVisible, setloadermodalVisible] = useState(false);
     const [res, setRes] = useState([])
     const [remark, setRemark] = useState("")
     let r = ""
@@ -28,9 +30,11 @@ export default function Attendencereport({ navigation }) {
                 console.log("success")
                 console.log(res.message);
                 setRes(res.message)
+                setloadermodalVisible(false);
                 setModalVisible(true);
             } else {
                 Alert.alert('No Records');
+                setloadermodalVisible(false)
             }
         })
     }
@@ -54,7 +58,7 @@ export default function Attendencereport({ navigation }) {
         <>
             <MyStatusBar backgroundColor={WHITE} barStyle={'dark-content'} />
             <View style={{ flex: 1, backgroundColor: 'white' }}>
-                <View style={{ backgroundColor: 'white' }}>
+                <View style={{ backgroundColor: 'white', width: WIDTH * 0.2 }}>
                     <TouchableOpacity onPress={() => {
                         navigation.navigate("StartScreen")
                     }}>
@@ -69,6 +73,20 @@ export default function Attendencereport({ navigation }) {
                     <Modal
                         animationType="fade"
                         transparent={true}
+                        visible={loadermodalVisible}
+                        onRequestClose={() => {
+                            // setModalVisible(!modalVisible);
+                        }}>
+                        <View style={styles.centeredView}>
+                            <Image
+                                style={{ height: 100, width: 100 }}
+                                source={LOADER}
+                            />
+                        </View>
+                    </Modal>
+                    <Modal
+                        animationType="fade"
+                        transparent={true}
                         visible={modalVisible}
                         onRequestClose={() => {
                             Alert.alert('Modal has been closed.');
@@ -76,19 +94,19 @@ export default function Attendencereport({ navigation }) {
                         }}>
                         <View style={styles.centeredView}>
                             <View style={styles.modalView}>
-                                <View style={{ padding: 10, margin: 10 }}>{res.length > 0 && res.map((record, index) => {
+                                <ScrollView showsVerticalScrollIndicator={true} style={{}}>{res.length > 0 && res.map((record, index) => {
                                     if (record?.attendance_remark != "") {
                                         // setRemark(record.attendance_remark)
                                         r = (record.attendance_remark)
                                     }
-                                    return <View>
-                                        <Text>{getHeading(record.attendance_type)}</Text>
+                                    return <View key={index}>
+                                        <Text style={{ color: 'black' }}>{getHeading(record.attendance_type)}</Text>
                                         <Text style={{ color: getColor(record.attendance_type), margin: 10 }}>
-                                            {index + 1} Start: {moment(record.attendance_start).format("hh:mm:ss") + " "} End:{moment(record.attendance_end).format("hh:mm:ss")}
+                                            Start: {moment(record.attendance_start).format("hh:mm:ss") + " "} End:{moment(record.attendance_end).format("hh:mm:ss")}
                                         </Text>
                                         {/* { <View style={{ backgroundColor: "red" }}> <Text style={{ color: "white" }}>{record.attendance_remark}</Text></View> : null} */}
                                     </View>
-                                })}</View>
+                                })}</ScrollView>
                                 <View>
                                     {r ?
                                         <View style={{ backgroundColor: 'red', padding: 20, borderRadius: 10 }}>
@@ -122,6 +140,7 @@ export default function Attendencereport({ navigation }) {
                     <TouchableOpacity
                         onPress={() => {
                             let dt = moment(date).format("YYYY/MM/DD")
+                            setloadermodalVisible(true);
                             getAttendance(dt)
                             // setModalVisible(true);
                             // console.log(date)
@@ -164,12 +183,12 @@ const styles = StyleSheet.create({
         marginTop: 22,
     },
     modalView: {
-        height: 800,
-        width: 400,
+        height: HEIGHT * 0.8,
+        width: WIDTH * 0.9,
         margin: 20,
-        backgroundColor: '#EDB900',
+        backgroundColor: '#dedcdc',
         borderRadius: 20,
-        padding: 35,
+        padding: 30,
         alignItems: 'center',
         shadowColor: '#000',
         shadowOffset: {
@@ -182,9 +201,10 @@ const styles = StyleSheet.create({
     },
     button: {
         marginTop: 20,
-        borderRadius: 20,
+        borderRadius: 10,
         padding: 10,
         elevation: 2,
+        width: WIDTH * 0.5
     },
     buttonOpen: {
         backgroundColor: '#F194FF',

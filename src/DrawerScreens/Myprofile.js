@@ -4,7 +4,7 @@ import { getObjByKey } from '../utils/Storage';
 import { TouchableOpacity } from 'react-native-gesture-handler';
 import { BACK } from '../constants/imagepath'
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { MyStatusBar } from '../constants/config';
+import { MyStatusBar, WIDTH } from '../constants/config';
 import { WHITE } from '../constants/color';
 import StartScreen from '../loginpages/StartScreen';
 
@@ -20,8 +20,8 @@ export default function Myprofile({ navigation }) {
     return (
         <>
             <MyStatusBar backgroundColor={WHITE} barStyle={'dark-content'} />
-            <View style={{ flex: 1, backgroundColor: 'white' }}>
-                <View style={{ backgroundColor: 'white' }}>
+            <View style={{ flex: 1, backgroundColor: 'white', width: WIDTH }}>
+                <View style={{ backgroundColor: 'white', width: WIDTH * 0.2 }}>
                     <TouchableOpacity onPress={() => {
                         navigation.navigate("StartScreen")
                     }}>
