@@ -110,6 +110,7 @@ export default Login = ({ navigation }) => {
                 Alert.alert("Your OTP Is ", res.data.otp)
                 setPage(1);
                 setModalVisible(false)
+                setCounter(30);
             } else {
                 Alert.alert(res.message)
             }
@@ -368,11 +369,10 @@ export default Login = ({ navigation }) => {
                             </View>
                             <View style={{ alignItems: 'center', marginTop: 100 }}>
                                 <Text style={{ color: 'black' }}>Didn’t receive OTP?</Text>
-                                <Text></Text>
+                                <Text style={{ alignSelf: 'center', color: BLACK }}> Wait for 00:{counter == 0 ? "00" : counter} sec</Text>
                                 <TouchableOpacity onPress={() => {
                                     sendOTP();
                                 }}>
-                                    <Text style={{ alignSelf: 'center', color: BLACK }}> Wait for 00:{counter == 0 ? "00" : counter} sec</Text>
                                     {counter == 0 ? <Text
                                         onPress={() => {
                                             sendOTP();

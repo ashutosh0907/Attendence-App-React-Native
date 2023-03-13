@@ -1,6 +1,6 @@
 import { View, Text, Image, Alert, Modal, StyleSheet, Pressable } from 'react-native'
 import React, { useEffect, useState } from 'react'
-import { SPLASH, MENU } from "../constants/imagepath";
+import { SPLASH, MENU, LOADER } from "../constants/imagepath";
 import { ScrollView, TouchableOpacity } from 'react-native';
 import { HEIGHT, MyStatusBar, WIDTH } from '../constants/config';
 import { WHITE } from '../constants/color';
@@ -14,8 +14,9 @@ import { checkuserToken } from '../redux/actions/auth';
 import { BASE_URL } from '../constants/url';
 import { POSTNETWORK } from '../utils/Network';
 import { NetworkInfo } from 'react-native-network-info';
-
 import moment from 'moment';
+
+
 
 const sleep = time => new Promise(resolve => setTimeout(() => resolve(), time))
 
@@ -36,6 +37,7 @@ export default function StartScreen() {
     const [wifi, setWifi] = useState(false);
     const [locationenabled, setLocationEnabled] = useState(false);
     const [loadermodalVisible, setloadermodalVisible] = useState(false);
+
 
     useEffect(() => {
         async function getStartStatus() {
@@ -65,44 +67,44 @@ export default function StartScreen() {
     }, []);
 
 
-    const getLocation = () => {
-        const result = requestLocationPermission();
-        result.then(res => {
-            if (res) {
-                try {
-                    Geolocation.getCurrentPosition(
-                        position => {
-                            setLocationEnabled(true);
-                        },
-                        error => {
-                            console.log("inside error on start screen");
-                            setLocationEnabled(false);
-                        },
-                        { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000 }
-                    );
-                } catch (error) {
-                    console.log("Error getting location: ", error);
-                }
-            }
-        });
-    };
+    // const getLocation = () => {
+    //     const result = requestLocationPermission();
+    //     result.then(res => {
+    //         if (res) {
+    //             try {
+    //                 Geolocation.getCurrentPosition(
+    //                     position => {
+    //                         setLocationEnabled(true);
+    //                     },
+    //                     error => {
+    //                         console.log("inside error on start screen");
+    //                         setLocationEnabled(false);
+    //                     },
+    //                     { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000 }
+    //                 );
+    //             } catch (error) {
+    //                 console.log("Error getting location: ", error);
+    //             }
+    //         }
+    //     });
+    // };
 
 
-    const wifiChecking = () => {
-        console.log('wifi');
-        return new Promise((resolve, reject) => {
-            NetInfo.fetch().then(state => {
-                if (state.type === 'wifi') {
-                    console.log('wifi');
-                    setWifi(true);
-                } else {
-                    setWifi(false);
-                }
-            }).catch(error => {
-                reject(error);
-            });
-        });
-    };
+    // const wifiChecking = () => {
+    //     console.log('wifi');
+    //     return new Promise((resolve, reject) => {
+    //         NetInfo.fetch().then(state => {
+    //             if (state.type === 'wifi') {
+    //                 console.log('wifi');
+    //                 setWifi(true);
+    //             } else {
+    //                 setWifi(false);
+    //             }
+    //         }).catch(error => {
+    //             reject(error);
+    //         });
+    //     });
+    // };
 
 
     //  Getting Latitude and Longitude from this below code
@@ -182,17 +184,18 @@ export default function StartScreen() {
 
     // Function for NORMAL_BRAKE
     // handleBrake() called whenever user clicks on Take a Brake in the UI
-    const handleBrake = async () => {
+    const handleBrake = async (bk = isbrake) => {
         const url = `${BASE_URL}addAttendance?_format=json`;
         let getlatlongGateway = await getLatLongGateway();
         console.log("handle brake latttttttitude----------------", getlatlongGateway[0]);
         const obj = {
-            start: isbrake ? 0 : 1,
+            start: bk ? 0 : 1,
             attendance_type: 3,
             lat: getlatlongGateway[0],
             lng: getlatlongGateway[1],
             gateway: getlatlongGateway[2],
         }
+        stopBackgroundService()
         POSTNETWORK(url, obj, true).then(res => {
             console.log('res', res);
             if (res.code == 200) {
@@ -206,6 +209,9 @@ export default function StartScreen() {
                     startBackgroundService()
             } else if (res.message === 'Network is not same') {
                 Alert.alert('Connect to the office Wifi');
+            }
+            else {
+                Alert.alert(res.message);
             }
         }).catch(err => {
             console.log("ERROR", err);
@@ -247,6 +253,7 @@ export default function StartScreen() {
         })
     }
 
+    //  Function for END SESSION
     const logoutTime = async () => {
         setloadermodalVisible(true);
         let getlatlongGateway = await getLatLongGateway();
@@ -282,13 +289,15 @@ export default function StartScreen() {
                 await storeObjByKey('lunchBrake', false);
                 setIsLunchBrake(false)
                 setStartstop(true);
-
             } else if (res.message === 'Network is not same') {
                 setloadermodalVisible(false)
                 Alert.alert('Connect to the office Wifi');
+            } else {
+                setloadermodalVisible(false)
             }
         }).catch(err => {
             console.log("ERROR", err);
+            setloadermodalVisible(false)
         })
     }
 
@@ -303,15 +312,17 @@ export default function StartScreen() {
             lng: getlatlongGateway[1],
             gateway: getlatlongGateway[2],
         }
+        stopBackgroundService()
         POSTNETWORK(url, obj, true).then(res => {
             console.log('res', res);
             if (res.code == 200) {
                 console.log("SUCCESS SSSSSSSSSSSSSSS");
+                startBackgroundService()
             }
             else {
                 console.log("IN ELSE GOING TO HANDLE BRAKE");
-                stopBackgroundService()
-                handleBrake();
+                // stopBackgroundService()
+                handleBrake(false);
             }
         }).catch(err => {
             console.log('err');
@@ -321,12 +332,14 @@ export default function StartScreen() {
 
     const veryIntensiveTask = async (taskDataArguments) => {
         const { delay } = taskDataArguments;
-
         try {
             await new Promise(async (resolve) => {
                 for (let i = 0; BackgroundService.isRunning(); i++) {
                     await BackgroundService.updateNotification({ taskDesc: 'Attendify Is Running ' });
                     await sleep(300000);
+                    if (!BackgroundService.isRunning()) {
+                        break;
+                    }
                     pulseCheck();
                 }
             });
@@ -346,7 +359,7 @@ export default function StartScreen() {
         color: '#ff00ff',
         linkingURI: 'yourSchemeHere://chat/jane', // See Deep Linking for more info
         parameters: {
-            delay: 1000,
+            delay: 300000,
         },
     };
 
@@ -458,8 +471,9 @@ export default function StartScreen() {
                         <Text style={{ fontSize: 15 }}>“Start your day, log your attendance, and</Text>
                         <Text style={{ fontSize: 15 }}>manage all your attendance any time.”</Text>
                     </View>
+
                     <View style={{ flexDirection: 'row', width: WIDTH * 0.9, alignItems: 'center', justifyContent: 'space-between', alignSelf: 'center' }}>
-                        <Text style={{ marginTop: 60, fontSize: 20, color: 'black' }}>Date : {date}</Text>
+                        <Text style={{ marginTop: 60, fontSize: 20, color: 'black' }}>Date : {moment(date, 'MM/DD/YYYY').format('DD/MM/YYYY')}</Text>
                         <Text style={{ marginTop: 60, fontSize: 20, color: 'green' }}>Time : {time}</Text>
                     </View>
                     <View>

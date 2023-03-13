@@ -51,11 +51,13 @@ export default function CustomDrawer({ navigation }) {
             name: 'Attendence Report',
             navigateTo: () => navigation.navigate("Attendencereport"),
             img: REPORT,
-        }, {
-            name: 'Remarks',
-            navigateTo: () => navigation.navigate("Remarks"),
-            img: REMARKS,
-        }, {
+        },
+        // {
+        //     name: 'Remarks',
+        //     navigateTo: () => navigation.navigate("Remarks"),
+        //     img: REMARKS,
+        // },
+        {
             name: 'Log Out',
             navigateTo: () => logout(),
             img: LOGOUT,

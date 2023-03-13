@@ -32,7 +32,7 @@ export default function Myprofile({ navigation }) {
                     </TouchableOpacity>
                 </View>
                 <View style={{ justifyContent: 'center', alignItems: 'center', backgroundColor: 'white' }}>
-                    <Text style={{ color: 'gray', fontSize: 30 }}>Profile Page</Text>
+                    <Text style={{ color: 'grey', fontSize: 27, fontWeight: '600' }}>Profile Page</Text>
                     <View style={styles.detailsContainerStyle}>
                         <View style={styles.eachEntryStyle}>
                             <Text style={styles.headersStyle}>Name :</Text>
@@ -70,15 +70,21 @@ const styles = StyleSheet.create({
         padding: 30
     },
     eachEntryStyle: {
-        padding: 10
+        padding: 6,
+        // borderColor: 'black',
+        // borderWidth: 1,
+        marginVertical: 2
     },
     headersStyle: {
         fontSize: 18,
-        color: 'green'
+        color: 'blue',
+        fontWeight: '500',
+
     },
     dataStyles: {
-        fontSize: 25,
-        color: 'black'
+        fontSize: 24,
+        color: 'black',
+        fontWeight: '400'
     }
 })
 

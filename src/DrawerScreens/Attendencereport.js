@@ -36,6 +36,8 @@ export default function Attendencereport({ navigation }) {
                 Alert.alert('No Records');
                 setloadermodalVisible(false)
             }
+        }).catch(err => {
+            setloadermodalVisible(false);
         })
     }
 
@@ -68,8 +70,8 @@ export default function Attendencereport({ navigation }) {
                         />
                     </TouchableOpacity>
                 </View>
-                <View><Text style={{ alignSelf: 'center', fontSize: 30, color: 'black' }}>Attendece Report</Text></View>
-                <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+                <View style={{ justifyContent: 'center', alignItems: 'center', marginVertical: 100 }}>
+                    <View><Text style={{ color: 'grey', fontSize: 27, fontWeight: '600' }}>Attendence Report</Text></View>
                     <Modal
                         animationType="fade"
                         transparent={true}
@@ -123,20 +125,22 @@ export default function Attendencereport({ navigation }) {
                             </View>
                         </View>
                     </Modal>
-                    <Text style={{ color: 'black', fontSize: 20 }}>Pick A Date</Text>
-                    <DatePicker
-                        style={styles.datePickerStyle}
-                        date={date} //initial date from state
-                        mode="date" //The enum of date, datetime and time
-                        // placeholder="select date"
-                        textColor='black'
-                        format="DD-MM-YYYY"
-                        minDate="10-02-2023"
-                        maxDate="01-01-2045"
-                        onDateChange={(date) => {
-                            setDate(date);
-                        }}
-                    />
+                    <View style={{ marginVertical: 40, justifyContent: 'center', alignItems: 'center' }}>
+                        <Text style={{ color: 'black', fontSize: 20 }}>Pick a date to get Attendece Report </Text>
+                        <DatePicker
+                            style={styles.datePickerStyle}
+                            date={date} //initial date from state
+                            mode="date" //The enum of date, datetime and time
+                            // placeholder="select date"
+                            textColor='black'
+                            format="DD-MM-YYYY"
+                            minimumDate={new Date("2013-01-01")}
+                            maxDate="01-01-2045"
+                            onDateChange={(date) => {
+                                setDate(date);
+                            }}
+                        />
+                    </View>
                     <TouchableOpacity
                         onPress={() => {
                             let dt = moment(date).format("YYYY/MM/DD")
