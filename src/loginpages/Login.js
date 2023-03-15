@@ -70,6 +70,7 @@ export default Login = ({ navigation }) => {
 
 
     const VerifyOTP = () => {
+        setModalVisible(true);
         const url = `${BASE_URL}verifyOTP?_format=json`;
         const obj = {
             mobile: signInres.mobile,
@@ -81,6 +82,7 @@ export default Login = ({ navigation }) => {
             console.log('res', res);
             setLoading(true);
             if (res.code == 200) {
+                setModalVisible(false)
                 storeObjByKey('loginResponse', res).then(() => {
                     dispatch(checkuserToken())
                 })
@@ -89,36 +91,39 @@ export default Login = ({ navigation }) => {
             } else {
                 Alert.alert(res.message);
                 setLoading(false)
+                setModalVisible(false)
             }
         }).catch(err => {
+            setModalVisible(false)
             console.log("ERROR", err);
             setLoading(false)
         })
     }
 
     const sendOTP = () => {
+        setModalVisible(true)
         const url = `${BASE_URL}userSignin?_format=json`;
         const obj = {
             mobile: parseInt(number),
         }
         console.log(url);
-        setModalVisible(true)
+        // setModalVisible(true)
         POSTNETWORK(url, obj).then(res => {
             console.log('ress', res);
             if (res.code == 200) {
+                setModalVisible(false)
                 setSignInres(res.data);
                 Alert.alert("Your OTP Is ", res.data.otp)
                 setPage(1);
-                setModalVisible(false)
                 setCounter(30);
             } else {
+                setModalVisible(false)
                 Alert.alert(res.message)
             }
         }).catch(err => {
             console.log("ERROR", err);
             setModalVisible(false)
         })
-        setModalVisible(false)
     }
     const SigninView = () => {
         return (

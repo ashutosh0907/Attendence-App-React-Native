@@ -6,7 +6,7 @@ import PERMISSION from '../assets/images/permission.png'
 import LOCATION from '../assets/images/location.png'
 import WIFI from '../assets/images/wifi.png'
 import { GRAY, WHITE } from '../constants/color'
-import { MyStatusBar, WIDTH } from '../constants/config'
+import { HEIGHT, MyStatusBar, WIDTH } from '../constants/config'
 import Geolocation from 'react-native-geolocation-service'
 // import DeviceInfo from 'react-native-device-info'
 import NetInfo from '@react-native-community/netinfo'
@@ -199,22 +199,27 @@ export default function PermissionScreen({ navigation }) {
                                 style={{ width: 27, height: 27, marginLeft: 10 }}
                             />
                         </View>
+
+
                         <Modal
-                            style={{ backgroundColor: 'red', padding: 10 }}
-                            animationType="fade"
-                            transparent={true}
+                            style={{ backgroundColor: '#2196F3' }}
+                            animationType="slide"
+                            transparent={false}
                             visible={modalVisible}
                         >
-                            <View style={{ ...styles.centeredView, backgroundColor: 'yellow' }}>
-                                <Text style={{ color: 'black' }}>Why You Haven't Logged Out Yesterday?</Text>
-                                <TextInput value={issuetext} onChangeText={setIssueText} style={styles.input} />
-                                <Pressable
+                            <View style={{ justifyContent: 'center', alignItems: 'center', marginVertical: 170, width: WIDTH }}>
+                                <Text style={{ color: 'black', fontSize: 20, fontWeight: '700' }}>Why You Had Not Logged Out</Text>
+                                <Text style={{ color: 'black', fontSize: 20, fontWeight: '700' }}> Yesterday?</Text>
+                                <TextInput multiline={true} textAlignVertical={"top"} value={issuetext} onChangeText={setIssueText} style={styles.input} />
+                                <TouchableOpacity
                                     style={[styles.button, styles.buttonClose]}
                                     onPress={handleModalSubmit}>
                                     <Text style={styles.textStyle}>Submit Response</Text>
-                                </Pressable>
+                                </TouchableOpacity>
                             </View>
                         </Modal>
+
+
                         <View>
                             <TouchableOpacity onPress={() => {
                                 getLocation();
@@ -267,7 +272,7 @@ const styles = StyleSheet.create({
         marginTop: 22,
     },
     modalView: {
-        height: 800,
+        height: 500,
         width: 400,
         margin: 20,
         backgroundColor: '#EDB900',
@@ -284,10 +289,12 @@ const styles = StyleSheet.create({
         elevation: 5,
     },
     button: {
-        marginTop: 20,
-        borderRadius: 20,
+        width: WIDTH * 0.5,
+        marginTop: 10,
+        borderRadius: 10,
         padding: 10,
         elevation: 2,
+        backgroundColor: 'red',
     },
     buttonOpen: {
         backgroundColor: '#F194FF',
@@ -305,8 +312,9 @@ const styles = StyleSheet.create({
         textAlign: 'center',
     },
     input: {
-        backgroundColor: "white",
+        backgroundColor: "#dedcdc",
         height: 200,
         width: 300,
+        borderRadius: 10,
     },
 })

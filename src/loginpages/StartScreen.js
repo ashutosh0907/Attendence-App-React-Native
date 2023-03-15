@@ -35,6 +35,7 @@ export default function StartScreen() {
     const [ismodalopen, setIsModalOpen] = useState(false);
     const [res, setRes] = useState();
     const [wifi, setWifi] = useState(false);
+    const [lunchString, setlunchString] = useState("");
     const [locationenabled, setLocationEnabled] = useState(false);
     const [loadermodalVisible, setloadermodalVisible] = useState(false);
 
@@ -49,6 +50,8 @@ export default function StartScreen() {
             let lunchBrake = await getObjByKey('lunchBrake');
             setIsLunchBrake(lunchBrake)
             setStartstop(!startStatus?.isStarted)
+            let result = await getObjByKey('lunchstring');
+            setlunchString(result);
         }
         getStartStatus();
     }, [])
@@ -67,47 +70,6 @@ export default function StartScreen() {
     }, []);
 
 
-    // const getLocation = () => {
-    //     const result = requestLocationPermission();
-    //     result.then(res => {
-    //         if (res) {
-    //             try {
-    //                 Geolocation.getCurrentPosition(
-    //                     position => {
-    //                         setLocationEnabled(true);
-    //                     },
-    //                     error => {
-    //                         console.log("inside error on start screen");
-    //                         setLocationEnabled(false);
-    //                     },
-    //                     { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000 }
-    //                 );
-    //             } catch (error) {
-    //                 console.log("Error getting location: ", error);
-    //             }
-    //         }
-    //     });
-    // };
-
-
-    // const wifiChecking = () => {
-    //     console.log('wifi');
-    //     return new Promise((resolve, reject) => {
-    //         NetInfo.fetch().then(state => {
-    //             if (state.type === 'wifi') {
-    //                 console.log('wifi');
-    //                 setWifi(true);
-    //             } else {
-    //                 setWifi(false);
-    //             }
-    //         }).catch(error => {
-    //             reject(error);
-    //         });
-    //     });
-    // };
-
-
-    //  Getting Latitude and Longitude from this below code
     const getLatLongGateway = async () => {
         try {
             NetworkInfo.getGatewayIPAddress().then(defaultGateway => {
@@ -136,6 +98,7 @@ export default function StartScreen() {
                 );
             }
         } catch (e) {
+            Alert.alert('Turn on the Location');
             console.log(e);
         }
         console.log("lattttttitude ------------------", latitude)
@@ -231,13 +194,35 @@ export default function StartScreen() {
             lng: getlatlongGateway[1],
             gateway: getlatlongGateway[2],
         }
+        /*
+        if (obj.start == 0) {
+                    res.message.map((param) => {
+                        if (param.attendance_end == null) {
+                            lunchstarttime = param.attendance_start;
+
+                        } else {
+                            lunchendtime = param.attendance_end;
+                        }
+                    })
+                    console.log("Lunch Start Time = ", lunchstarttime.());
+                    console.log("Lunch End Time = ", lunchendtime);
+                }
+        */
         POSTNETWORK(url, obj, true).then(res => {
             console.log('res', res);
             if (res.code == 200) {
                 console.log(res)
+                if (islunchbrake) {
+                    let temp = res.message.filter((t) => t.attendance_type == 2)
+                    console.log(temp)
+                    let t = "Start: " + moment(temp[0].attendance_start).format("hh:mm a") + " End" + moment(temp[0].attendance_end).format("hh:mm a");
+                    setlunchString(t)
+                    storeObjByKey('lunchstring', t);
+                }
                 setIsLunchBrake(!islunchbrake)
                 // Storing status of lunch brake in Async-Storage
                 storeObjByKey("lunchBrake", !islunchbrake)
+
                 if (!islunchbrake)
                     stopBackgroundService()
                 else // end lunchbreak on press
@@ -255,7 +240,7 @@ export default function StartScreen() {
 
     //  Function for END SESSION
     const logoutTime = async () => {
-        setloadermodalVisible(true);
+        // setloadermodalVisible(true);
         let getlatlongGateway = await getLatLongGateway();
         console.log("log out time latttttttitude----------------", getlatlongGateway[0]);
         const url = `${BASE_URL}addAttendance?_format=json`;
@@ -299,6 +284,7 @@ export default function StartScreen() {
             console.log("ERROR", err);
             setloadermodalVisible(false)
         })
+        setloadermodalVisible(false)
     }
 
 
@@ -525,6 +511,7 @@ export default function StartScreen() {
                             }} style={{ width: 302, height: 51, backgroundColor: '#EDB900', marginTop: 30, alignItems: 'center', borderRadius: 10, }}>
                                 <Text style={{ alignContent: 'center', justifyContent: 'center', fontSize: 20, marginTop: 10, color: 'black', fontWeight: '200' }}>
                                     {islunchbrake ? " End Lunch Break" : "Take Lunch Break"}</Text>
+                                <Text style={{ color: 'black' }}>{lunchString}</Text>
                             </TouchableOpacity>}
                         </View> : null}
                     </View>
