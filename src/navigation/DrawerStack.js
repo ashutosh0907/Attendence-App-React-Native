@@ -22,9 +22,9 @@ export default function DrawerStack() {
                 },
             }}>
             <Drawer.Screen options={{ headerShown: false }} name="StartScreen" component={StartScreen} />
-            <Drawer.Screen options={{ headerShown: false }} name="Remarks" component={Remarks} />
-            <Drawer.Screen options={{ headerShown: false }} name="Myprofile" component={Myprofile} />
-            <Drawer.Screen options={{ headerShown: false }} name="Attendencereport" component={Attendencereport} />
+            <Drawer.Screen options={{ headerShown: false, swipeEnabled: false }} name="Remarks" component={Remarks} />
+            <Drawer.Screen options={{ headerShown: false, swipeEnabled: false }} name="Myprofile" component={Myprofile} />
+            <Drawer.Screen options={{ headerShown: false, swipeEnabled: false }} name="Attendencereport" component={Attendencereport} />
         </Drawer.Navigator>
     )
 }

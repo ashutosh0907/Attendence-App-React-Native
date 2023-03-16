@@ -38,6 +38,10 @@ export default function StartScreen() {
     const [lunchString, setlunchString] = useState("");
     const [locationenabled, setLocationEnabled] = useState(false);
     const [loadermodalVisible, setloadermodalVisible] = useState(false);
+    const [hour, setHour] = useState('00')
+    const [mins, setMins] = useState('00')
+    const [sec, setSecs] = useState('00')
+    const [timer, setTimer] = useState()
 
 
     useEffect(() => {
@@ -68,6 +72,13 @@ export default function StartScreen() {
         }, 1000);
         return () => clearInterval(intervalId);
     }, []);
+
+    useEffect(() => {
+        getLatLongGateway();
+        getLatLongGateway();
+        getLatLongGateway();
+    }, [])
+
 
 
     const getLatLongGateway = async () => {
@@ -109,6 +120,7 @@ export default function StartScreen() {
 
     // startTime() is called whenever user clicks on START on UI
     const startTime = async () => {
+        console.log("inside startTime()");
         const url = `${BASE_URL}addAttendance?_format=json`;
         let getlatlongGateway = await getLatLongGateway();
         console.log("start time latttttttitude----------------", getlatlongGateway[0]);

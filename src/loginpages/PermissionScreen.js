@@ -38,12 +38,12 @@ export default function PermissionScreen({ navigation }) {
         getStatus();
         getLocation();
         wifiChecking();
-        // const id = setInterval(() => {
-        //     getLocation();
-        //     wifiChecking();
-        // }, 100)
     }, [])
 
+    useEffect(() => {
+        wifiChecking();
+        getLocation();
+    }, [])
 
     useEffect(() => {
         let url = `${BASE_URL}checkYesterdayLogin?_format=json`
@@ -113,28 +113,8 @@ export default function PermissionScreen({ navigation }) {
         }
     };
 
-    // function to check permissions and get Location
-    // const getLocation = () => {
-    //     const result = requestLocationPermission();
-    //     result.then(res => {
-    //         if (res) {
-    //             Geolocation.getCurrentPosition(
-    //                 position => {
-    //                     setLocation(position);
-    //                     setLocationEnabled(true);
-    //                 },
-    //                 error => {
-    //                     setLocation(false);
-    //                     console.log("inide err")
-    //                     setLocationEnabled(false);
-    //                 },
-    //                 { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000 },
-    //             );
-    //         }
-    //     });
-    // };
-
     const getLocation = () => {
+        console.log("location");
         const result = requestLocationPermission();
         result.then(res => {
             if (res) {
@@ -167,6 +147,7 @@ export default function PermissionScreen({ navigation }) {
                 setWifi(true);
             } else {
                 setWifi(false);
+                Alert('Connect to the wifi')
             }
         });
     }
@@ -174,7 +155,7 @@ export default function PermissionScreen({ navigation }) {
     return (
         <>
             <MyStatusBar backgroundColor={WHITE} barStyle={'dark-content'} />
-            <ScrollView>
+            <ScrollView showsVerticalScrollIndicator={false}>
                 <View style={{ backgroundColor: 'white', marginLeft: 10 }}>
                     <Image
                         source={SPLASH}

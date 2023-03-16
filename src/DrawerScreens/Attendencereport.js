@@ -93,7 +93,10 @@ export default function Attendencereport({ navigation }) {
                         onRequestClose={() => {
                             setModalVisible(!modalVisible);
                         }}>
-                        <View style={styles.centeredView}>
+                        <TouchableOpacity
+                            activeOpacity={1}
+                            onPress={() => setModalVisible(false)}
+                            style={styles.centeredView}>
                             <View style={styles.modalView}>
                                 <ScrollView showsVerticalScrollIndicator={true} style={{}}>{res.length > 0 && res.map((record, index) => {
                                     if (record?.attendance_remark != "") {
@@ -122,7 +125,7 @@ export default function Attendencereport({ navigation }) {
                                     <Text style={styles.textStyle}>Close</Text>
                                 </Pressable>
                             </View>
-                        </View>
+                        </TouchableOpacity>
                     </Modal>
                     <View style={{ marginVertical: 40, justifyContent: 'center', alignItems: 'center' }}>
                         <Text style={{ color: 'black', fontSize: 20 }}>Pick a date to get Attendece Report </Text>
@@ -226,63 +229,3 @@ const styles = StyleSheet.create({
     },
 });
 
-
-
-/*
-
-<View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-            <Modal
-                animationType="fade"
-                transparent={true}
-                visible={modalVisible}
-                onRequestClose={() => {
-                    Alert.alert('Modal has been closed.');
-                    setModalVisible(!modalVisible);
-                }}>
-                <View style={styles.centeredView}>
-                    <View style={styles.modalView}>
-                        <View style={{ padding: 10, margin: 10 }}>{res.length > 0 && res.map((record, index) => {
-                            return <View>
-                                <Text>{getHeading(record.attendance_type)}</Text>
-                                <Text style={{ color: getColor(record.attendance_type), margin: 10 }}>
-                                    {index + 1} Start: {moment(record.attendance_start).format("hh:mm:ss") + " "} End:{moment(record.attendance_end).format("hh:mm:ss")}
-                                </Text>
-                            </View>
-                        })}</View>
-                        <Pressable
-                            style={[styles.button, styles.buttonClose]}
-                            onPress={() => setModalVisible(!modalVisible)}>
-                            <Text style={styles.textStyle}>Close</Text>
-                        </Pressable>
-                    </View>
-                </View>
-            </Modal>
-            <Text style={{ color: 'black', fontSize: 20 }}>Pick A Date</Text>
-            <DatePicker
-                style={styles.datePickerStyle}
-                date={date} //initial date from state
-                mode="date" //The enum of date, datetime and time
-                // placeholder="select date"
-                format="DD-MM-YYYY"
-                minDate="10-02-2023"
-                maxDate="01-01-2045"
-
-                onDateChange={(date) => {
-                    setDate(date);
-                }}
-            />
-
-            <TouchableOpacity
-                onPress={() => {
-                    // dateFormat = moment(date).format("DD-MM-YYYY")
-                    // setDate(dateFormat);
-                    let dt = moment(date).format("YYYY/MM/DD")
-                    getAttendance(dt)
-                    setModalVisible(true);
-                    // console.log(date)
-                }} style={styles.touchableOpacityStyle}>
-                <Text style={{ color: 'white' }}>Show Details</Text>
-            </TouchableOpacity>
-        </View>
-
-*/
