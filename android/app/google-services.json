@@ -1,0 +1,68 @@
+{
+  "project_info": {
+    "project_number": "237552462503",
+    "project_id": "pushnotification-a1fb7",
+    "storage_bucket": "pushnotification-a1fb7.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:237552462503:android:76345bdffac9f931f10982",
+        "android_client_info": {
+          "package_name": "com.app.attendify"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "237552462503-vcu7jvpevc66rko6hn8ahib24jqjs8m8.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBD3eXvqyc8CkwndeQVGpu9MNuS5q8oLCg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "237552462503-vcu7jvpevc66rko6hn8ahib24jqjs8m8.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:237552462503:android:8c8fd7f5de58bcf4f10982",
+        "android_client_info": {
+          "package_name": "com.attendify"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "237552462503-vcu7jvpevc66rko6hn8ahib24jqjs8m8.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBD3eXvqyc8CkwndeQVGpu9MNuS5q8oLCg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "237552462503-vcu7jvpevc66rko6hn8ahib24jqjs8m8.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

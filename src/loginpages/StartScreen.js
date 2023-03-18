@@ -9,7 +9,7 @@ import Geolocation from 'react-native-geolocation-service';
 import 'react-native-gesture-handler';
 import { useNavigation } from '@react-navigation/native';
 import { useDispatch } from 'react-redux';
-import { clearAll, getObjByKey, storeObjByKey, storeStringByKey } from '../utils/Storage';
+import { clearAll, deleteByKeys, getObjByKey, storeObjByKey, storeStringByKey } from '../utils/Storage';
 import { checkuserToken } from '../redux/actions/auth';
 import { BASE_URL } from '../constants/url';
 import { POSTNETWORK } from '../utils/Network';
@@ -38,10 +38,13 @@ export default function StartScreen() {
     const [lunchString, setlunchString] = useState("");
     const [locationenabled, setLocationEnabled] = useState(false);
     const [loadermodalVisible, setloadermodalVisible] = useState(false);
+
+
     const [hour, setHour] = useState('00')
     const [mins, setMins] = useState('00')
     const [sec, setSecs] = useState('00')
     const [timer, setTimer] = useState()
+
 
 
     useEffect(() => {
@@ -79,6 +82,45 @@ export default function StartScreen() {
         getLatLongGateway();
     }, [])
 
+    // useEffect(() => {
+    //     async function reflectTime() {
+    //         let t = getObjByKey('timerstatus');
+    //         console.log("hour : ", t.hour);
+    //         setHour(t.hour)
+    //         setMins(t.mins)
+    //         setSecs(t.sec)
+    //     }
+    //     reflectTime();
+    // }, [])
+
+    // function for running timer in the screen ------------------------------------
+    const startTimer = () => {
+        var timerVar = setInterval(countTimer, 1000);
+        setTimer(timerVar)
+        var totalSeconds = sec;
+        function countTimer() {
+            ++totalSeconds;
+            var hour = Math.floor(totalSeconds / 3600);
+            var minute = Math.floor((totalSeconds - hour * 3600) / 60);
+            var seconds = totalSeconds - (hour * 3600 + minute * 60);
+            if (hour < 10)
+                hour = "0" + hour;
+            if (minute < 10)
+                minute = "0" + minute;
+            if (seconds < 10)
+                seconds = "0" + seconds;
+            console.log(hour + ":" + minute + ":" + seconds)
+            // setHour(hour)
+            // setMins(minute)
+            // setSecs(seconds)
+        }
+        return timerVar;
+    }
+    // function for stopping timer in the screen ------------------------------------
+    const stopTimer = () => {
+        clearInterval(timer);
+    }
+
 
 
     const getLatLongGateway = async () => {
@@ -114,12 +156,16 @@ export default function StartScreen() {
         }
         console.log("lattttttitude ------------------", latitude)
         console.log("longggggitude ------------------", longitude)
+        console.log("Gateway ", gateway)
         return [latitude, longitude, gateway]
     }
 
 
     // startTime() is called whenever user clicks on START on UI
     const startTime = async () => {
+        // getLatLongGateway();
+        // getLatLongGateway();
+        setloadermodalVisible(true)
         console.log("inside startTime()");
         const url = `${BASE_URL}addAttendance?_format=json`;
         let getlatlongGateway = await getLatLongGateway();
@@ -130,12 +176,14 @@ export default function StartScreen() {
             attendance_type: 1,
             lat: getlatlongGateway[0],
             lng: getlatlongGateway[1],
-            gateway: getlatlongGateway[2]
+            gateway: getlatlongGateway[2],
         }
         console.log(url)
         POSTNETWORK(url, obj, true).then(res => {
+            setloadermodalVisible(false)
             console.log('res', res);
             if (res.code == 200) {
+                startTimer();
                 console.log(res)
                 setIsStart(0)
                 setCheckIsStart(true);
@@ -146,12 +194,15 @@ export default function StartScreen() {
                 }
                 storeObjByKey('startStatus', startStatus);
             } else if (res.message === 'Network is not same') {
+                setloadermodalVisible(false)
                 Alert.alert('Connect to the office Wifi');
             } else {
+                setloadermodalVisible(false)
                 Alert.alert('Your Attendece Is Already Marked For Today');
             }
         }).catch(err => {
-            Alert.alert('Your Attendece Is Already Marked For Today');
+            setloadermodalVisible(false);
+            Alert('Try Again')
             console.log("ERROR", err);
         })
     }
@@ -160,6 +211,9 @@ export default function StartScreen() {
     // Function for NORMAL_BRAKE
     // handleBrake() called whenever user clicks on Take a Brake in the UI
     const handleBrake = async (bk = isbrake) => {
+        getLatLongGateway();
+        getLatLongGateway();
+        setloadermodalVisible(true)
         const url = `${BASE_URL}addAttendance?_format=json`;
         let getlatlongGateway = await getLatLongGateway();
         console.log("handle brake latttttttitude----------------", getlatlongGateway[0]);
@@ -174,6 +228,7 @@ export default function StartScreen() {
         POSTNETWORK(url, obj, true).then(res => {
             console.log('res', res);
             if (res.code == 200) {
+                setloadermodalVisible(false)
                 console.log(res)
                 //Storing status of normal brake in Async-Storage
                 storeObjByKey('normalBrake', !isbrake);
@@ -183,12 +238,15 @@ export default function StartScreen() {
                 else
                     startBackgroundService()
             } else if (res.message === 'Network is not same') {
+                setloadermodalVisible(false)
                 Alert.alert('Connect to the office Wifi');
             }
             else {
+                setloadermodalVisible(false)
                 Alert.alert(res.message);
             }
         }).catch(err => {
+            setloadermodalVisible(false)
             console.log("ERROR", err);
         })
     }
@@ -196,6 +254,9 @@ export default function StartScreen() {
     // Function for LUNCH_BRAKE
     // handleLunchBrake() called whenever user clicks on Take Lunch Brake in the UI
     const handleLunchBrake = async () => {
+        getLatLongGateway();
+        getLatLongGateway();
+        setloadermodalVisible(true)
         const url = `${BASE_URL}addAttendance?_format=json`;
         let getlatlongGateway = await getLatLongGateway();
         console.log("handle lunch brake latttttttitude----------------", getlatlongGateway[0]);
@@ -206,28 +267,15 @@ export default function StartScreen() {
             lng: getlatlongGateway[1],
             gateway: getlatlongGateway[2],
         }
-        /*
-        if (obj.start == 0) {
-                    res.message.map((param) => {
-                        if (param.attendance_end == null) {
-                            lunchstarttime = param.attendance_start;
-
-                        } else {
-                            lunchendtime = param.attendance_end;
-                        }
-                    })
-                    console.log("Lunch Start Time = ", lunchstarttime.());
-                    console.log("Lunch End Time = ", lunchendtime);
-                }
-        */
         POSTNETWORK(url, obj, true).then(res => {
             console.log('res', res);
             if (res.code == 200) {
+                setloadermodalVisible(false)
                 console.log(res)
                 if (islunchbrake) {
                     let temp = res.message.filter((t) => t.attendance_type == 2)
                     console.log(temp)
-                    let t = "Start: " + moment(temp[0].attendance_start).format("hh:mm a") + " End" + moment(temp[0].attendance_end).format("hh:mm a");
+                    let t = "Start : " + moment(temp[0].attendance_start).format("hh:mm a") + " End : " + moment(temp[0].attendance_end).format("hh:mm a");
                     setlunchString(t)
                     storeObjByKey('lunchstring', t);
                 }
@@ -240,19 +288,24 @@ export default function StartScreen() {
                 else // end lunchbreak on press
                     startBackgroundService()
             } else if (res.message === 'Network is not same') {
+                setloadermodalVisible(false)
                 Alert.alert('Connect to the office Wifi');
             }
             else {
+                setloadermodalVisible(false)
                 Alert.alert("You can have only one Lunch Brake")
             }
         }).catch(err => {
-            Alert.alert("You can have only one Lunch Brake")
+            setloadermodalVisible(false);
+            Alert.alert("Something went wrong");
         })
     }
 
     //  Function for END SESSION
     const logoutTime = async () => {
-        // setloadermodalVisible(true);
+        getLatLongGateway();
+        getLatLongGateway();
+        setloadermodalVisible(true);
         let getlatlongGateway = await getLatLongGateway();
         console.log("log out time latttttttitude----------------", getlatlongGateway[0]);
         const url = `${BASE_URL}addAttendance?_format=json`;
@@ -286,21 +339,26 @@ export default function StartScreen() {
                 await storeObjByKey('lunchBrake', false);
                 setIsLunchBrake(false)
                 setStartstop(true);
+                deleteByKeys('lunchstring');
             } else if (res.message === 'Network is not same') {
                 setloadermodalVisible(false)
                 Alert.alert('Connect to the office Wifi');
             } else {
                 setloadermodalVisible(false)
+                stopBackgroundService();
             }
         }).catch(err => {
+            Alert.alert('You have not logged out Yesterday, Logout first and start new session');
             console.log("ERROR", err);
             setloadermodalVisible(false)
+            stopBackgroundService();
         })
-        setloadermodalVisible(false)
+        stopBackgroundService();
     }
 
 
     const pulseCheck = async () => {
+        getLatLongGateway();
         console.log("Inside Pulse Check")
         const url = `${BASE_URL}checkLocation?_format=json`;
         let getlatlongGateway = await getLatLongGateway();
@@ -314,16 +372,17 @@ export default function StartScreen() {
         POSTNETWORK(url, obj, true).then(res => {
             console.log('res', res);
             if (res.code == 200) {
-                console.log("SUCCESS SSSSSSSSSSSSSSS");
+                console.log("You are in office");
                 startBackgroundService()
             }
             else {
                 console.log("IN ELSE GOING TO HANDLE BRAKE");
-                // stopBackgroundService()
+                stopBackgroundService()
                 handleBrake(false);
             }
         }).catch(err => {
             console.log('err');
+            stopBackgroundService();
         })
     }
 
@@ -334,11 +393,11 @@ export default function StartScreen() {
             await new Promise(async (resolve) => {
                 for (let i = 0; BackgroundService.isRunning(); i++) {
                     await BackgroundService.updateNotification({ taskDesc: 'Attendify Is Running ' });
-                    await sleep(300000);
                     if (!BackgroundService.isRunning()) {
                         break;
                     }
-                    pulseCheck();
+                    await sleep(delay);
+                    await pulseCheck();
                 }
             });
         } catch (error) {
@@ -347,15 +406,15 @@ export default function StartScreen() {
     };
 
     const options = {
-        taskName: 'Example',
-        taskTitle: 'Attendify Is Keeping Track',
-        taskDesc: 'ExampleTask description',
+        taskName: 'Attendify background task',
+        taskTitle: 'Attendify background task',
+        taskDesc: 'Attendify is running in the background',
         taskIcon: {
             name: 'ic_launcher',
             type: 'mipmap',
         },
         color: '#ff00ff',
-        linkingURI: 'yourSchemeHere://chat/jane', // See Deep Linking for more info
+        linkingURI: 'Attendify://chat/jane',
         parameters: {
             delay: 300000,
         },
@@ -363,8 +422,9 @@ export default function StartScreen() {
 
     const startBackgroundService = async () => {
         try {
-            console.log("background service started---------------------------");
+            console.log("Background Service");
             await BackgroundService.start(veryIntensiveTask, options);
+            await BackgroundService.updateNotification({ taskDesc: 'Attendify is Running ' });
         } catch (error) {
             console.log("Error starting background service: ", error);
         }
@@ -373,6 +433,13 @@ export default function StartScreen() {
     const stopBackgroundService = async () => {
         try {
             console.log("Stopped")
+            // stopTimer();
+            // const obj = {
+            //     hour: hour,
+            //     mins: mins,
+            //     sec: sec,
+            // }
+            // storeObjByKey('timerstatus', obj);
             await BackgroundService.stop();
         } catch (error) {
             console.log("Error stopping background service: ", error);
@@ -505,6 +572,10 @@ export default function StartScreen() {
                                 }}
                             >
                                 <Text style={{ alignContent: 'center', justifyContent: 'center', fontSize: 30, marginTop: 5, color: 'white', }}>END SESSION</Text>
+                                <View style={{ justifyContent: 'center', alignItems: 'center', width: WIDTH * 0.5, backgroundColor: '#1111', padding: 5, borderRadius: 10, marginVertical: 6.9 }}>
+                                    <Text style={{ color: 'black' }}>Total Working Time</Text>
+                                    <Text style={{ color: 'black' }}>{hour} : {mins} : {sec}</Text>
+                                </View>
                             </TouchableOpacity>}
                     </View>
                     <View style={{ flex: 1, marginVertical: 150, width: WIDTH, alignItems: 'center', justifyContent: 'center' }}>
@@ -520,10 +591,13 @@ export default function StartScreen() {
                             {!isbrake && <TouchableOpacity onPress={() => {
                                 handleLunchBrake();
                                 // stopBackgroundService();
-                            }} style={{ width: 302, height: 51, backgroundColor: '#EDB900', marginTop: 30, alignItems: 'center', borderRadius: 10, }}>
+                            }} style={{ width: 302, height: 51, backgroundColor: '#EDB900', marginTop: 30, alignItems: 'center', borderRadius: 10, marginVertical: 10 }}>
                                 <Text style={{ alignContent: 'center', justifyContent: 'center', fontSize: 20, marginTop: 10, color: 'black', fontWeight: '200' }}>
                                     {islunchbrake ? " End Lunch Break" : "Take Lunch Break"}</Text>
-                                <Text style={{ color: 'black' }}>{lunchString}</Text>
+                                <View style={{ marginVertical: 2.5 }}></View>
+                                <View style={{ justifyContent: 'center', alignItems: 'center', width: WIDTH * 0.6, backgroundColor: '#1111', padding: 6, borderRadius: 10, marginVertical: 10 }}>
+                                    <Text style={{ color: 'black' }}>{lunchString}</Text>
+                                </View>
                             </TouchableOpacity>}
                         </View> : null}
                     </View>

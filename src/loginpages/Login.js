@@ -219,6 +219,20 @@ export default Login = ({ navigation }) => {
                 <MyStatusBar backgroundColor={WHITE} barStyle={'dark-content'} />
                 <ScrollView showsVerticalScrollIndicator={false}>
                     <View style={{ backgroundColor: 'white', width: WIDTH, height: 1000, justifyContent: 'center', alignItems: 'center' }}>
+                        <Modal
+                            animationType="fade"
+                            transparent={true}
+                            visible={modalVisible}
+                            onRequestClose={() => {
+                                // setModalVisible(!modalVisible);
+                            }}>
+                            <View style={Styles.centeredView}>
+                                <Image
+                                    style={{ height: 100, width: 100 }}
+                                    source={LOADER}
+                                />
+                            </View>
+                        </Modal>
                         <View style={{ alignItems: 'center', width: WIDTH, height: 60, flexDirection: 'row' }}>
                             <View style={{ marginLeft: 20 }}>
                                 <TouchableOpacity onPress={() => {
