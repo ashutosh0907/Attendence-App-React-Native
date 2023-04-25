@@ -34,29 +34,33 @@ export default function PermissionScreen({ navigation }) {
             let result = await getObjByKey('loginResponse');
             setUserData(result);
         }
+        setWifi(false)
         getUserData()
-        getStatus();
-        getLocation();
         wifiChecking();
+        getLocation();
     }, [])
 
     useEffect(() => {
         wifiChecking();
         getLocation();
     }, [])
+    useEffect(() => {
+        getStatus()
+    }, [wifi, locationenabled])
+
 
     useEffect(() => {
         let url = `${BASE_URL}checkYesterdayLogin?_format=json`
         GETNETWORK(url, true).then(res => {
-            console.log('res', res);
+            // console.log('res', res);
             if (res.code == 200) {
-                console.log(res.message)
+                // console.log(res.message)
             }
             else if (res.code == 201) {
                 setModalVisible(true)
             }
         }).catch(err => {
-            console.log("ERROR", err);
+            // console.log("ERROR", err);
         })
     }, [])
 
@@ -68,22 +72,27 @@ export default function PermissionScreen({ navigation }) {
             remarks: issuetext,
         }
         POSTNETWORK(url, obj, true).then(res => {
-            console.log('res', res);
+            // console.log('res', res);
             if (res.code == 200) {
-                console.log(res.message)
+                // console.log(res.message)
                 setModalVisible(false)
             }
         }).catch(err => {
-            console.log("ERROR", err);
+            // console.log("ERROR", err);
         })
     }
 
     const getStatus = async () => {
+        console.log("get status called --------------------- > ");
         let startStatus = await getObjByKey('startStatus');
         let wifiandlocationStatus = await getObjByKey('wifiStart');
-        // console.log("Start Status : ", typeof (startStatus.isStarted), "wifi and locationStatus", typeof (wifiandlocationStatus.wifi), typeof (wifiandlocationStatus.location));
+        console.log("Start Status : ", startStatus.isStarted, "wifi and locationStatus", wifiandlocationStatus.wifi, wifiandlocationStatus.location);
         if (startStatus?.isStarted && wifiandlocationStatus.wifi && wifiandlocationStatus.location) {
             navigation.navigate("DrawerStack")
+            setWifi(false)
+            setLocationEnabled(false)
+            let storeWifi = { wifi: wifi, location: locationenabled };
+            storeObjByKey('wifiStart', storeWifi);
         }
     }
 
@@ -114,8 +123,9 @@ export default function PermissionScreen({ navigation }) {
     };
 
     const getLocation = () => {
-        console.log("location");
+        // console.log("location");
         const result = requestLocationPermission();
+        let storeWifi = { wifi: true, location: false };
         result.then(res => {
             if (res) {
                 try {
@@ -123,10 +133,11 @@ export default function PermissionScreen({ navigation }) {
                         position => {
                             setLocation(position);
                             setLocationEnabled(true);
+                            storeWifi.location = true
+                            storeObjByKey('wifiStart', storeWifi);
                         },
                         error => {
                             setLocation(false);
-                            console.log("inside error");
                             setLocationEnabled(false);
                         },
                         { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000 }
@@ -140,15 +151,23 @@ export default function PermissionScreen({ navigation }) {
 
 
     const wifiChecking = () => {
-        console.log('wifi')
+        // console.log('wifi')
         NetInfo.fetch().then(state => {
+            let storeWifi = { wifi: wifi, location: locationenabled };
             if (state.type == 'wifi') {
-                console.log('wifi')
+                // console.log('wifi')
                 setWifi(true);
+                storeWifi.wifi = true;
+                storeObjByKey('wifiStart', storeWifi);
             } else {
                 setWifi(false);
-                Alert('Connect to the wifi')
+                storeWifi.wifi = false;
+                storeObjByKey('wifiStart', storeWifi);
+                Alert.alert('Connect to the wifi')
+                storeObjByKey('wifiStart', storeWifi);
             }
+        }).catch((error) => {
+            console.log(error);
         });
     }
 

@@ -28,7 +28,9 @@ export default function CustomDrawer({ navigation }) {
         Alert.alert('', 'Do you want to Logout ?', [
             {
                 text: 'Cancel',
-                onPress: () => console.log('Cancel Pressed'),
+                onPress: () => {
+                    // console.log('Cancel Pressed')
+                },
                 style: 'cancel',
             },
             {
@@ -52,11 +54,11 @@ export default function CustomDrawer({ navigation }) {
             navigateTo: () => navigation.navigate("Attendencereport"),
             img: REPORT,
         },
-        // {
-        //     name: 'Remarks',
-        //     navigateTo: () => navigation.navigate("Remarks"),
-        //     img: REMARKS,
-        // },
+        {
+            name: 'Remarks',
+            navigateTo: () => navigation.navigate("Remarks"),
+            img: REMARKS,
+        },
         {
             name: 'Log Out',
             navigateTo: () => logout(),

@@ -48,7 +48,9 @@ export default Login = ({ navigation }) => {
                 Alert.alert('', 'Do you want to change your mobile number ?', [
                     {
                         text: 'Cancel',
-                        onPress: () => console.log('Cancel Pressed'),
+                        onPress: () => {
+                            // console.log('Cancel Pressed')
+                        },
                         style: 'cancel',
                     },
                     {
@@ -79,7 +81,7 @@ export default Login = ({ navigation }) => {
         }
         setLoading(true);
         POSTNETWORK(url, obj).then(res => {
-            console.log('res', res);
+            // console.log('res', res);
             setLoading(true);
             if (res.code == 200) {
                 setModalVisible(false)
@@ -95,7 +97,7 @@ export default Login = ({ navigation }) => {
             }
         }).catch(err => {
             setModalVisible(false)
-            console.log("ERROR", err);
+            // console.log("ERROR", err);
             setLoading(false)
         })
     }
@@ -106,10 +108,10 @@ export default Login = ({ navigation }) => {
         const obj = {
             mobile: parseInt(number),
         }
-        console.log(url);
+        // console.log(url);
         // setModalVisible(true)
         POSTNETWORK(url, obj).then(res => {
-            console.log('ress', res);
+            // console.log('ress', res);
             if (res.code == 200) {
                 setModalVisible(false)
                 setSignInres(res.data);
@@ -121,14 +123,14 @@ export default Login = ({ navigation }) => {
                 Alert.alert(res.message)
             }
         }).catch(err => {
-            console.log("ERROR", err);
+            // console.log("ERROR", err);
             setModalVisible(false)
         })
     }
     const SigninView = () => {
         return (
             <>
-                <ScrollView showsVerticalScrollIndicator={false}>
+                <View showsVerticalScrollIndicator={false}>
                     <View style={{ ...Styles.mainView }}>
                         {/* MODAL START------------------------------------------------------------------------------------------------ */}
                         <Modal
@@ -179,7 +181,7 @@ export default Login = ({ navigation }) => {
                                             setErr('')
                                             if (!/[a-zA-Z." "-,]/.test(txt.slice(-1))) {
                                                 setNumber(txt)
-                                                console.log(number);
+                                                // console.log(number);
                                             } else {
                                                 setErr('This field only contains numbers');
                                             }
@@ -209,7 +211,7 @@ export default Login = ({ navigation }) => {
                             </TouchableOpacity>
                         </View>
                     </View>
-                </ScrollView>
+                </View>
             </>
         )
     }
@@ -243,7 +245,9 @@ export default Login = ({ navigation }) => {
                                         [
                                             {
                                                 text: "Cancel",
-                                                onPress: () => console.log("Cancel Pressed"),
+                                                onPress: () => {
+                                                    // console.log("Cancel Pressed")
+                                                },
                                                 style: "cancel"
                                             },
                                             {

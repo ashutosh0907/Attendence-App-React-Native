@@ -1,6 +1,6 @@
 apply plugin: "com.android.application"
 apply plugin: "com.facebook.react"
-apply plugin: "com.google.gms.google-services"
+// apply plugin: "com.google.gms.google-services"
 
 import com.android.build.OutputFile
 
@@ -94,13 +94,14 @@ android {
 
     compileSdkVersion rootProject.ext.compileSdkVersion
 
-    namespace "com.attendify"
+    namespace "com.apptimates.attendify"
     defaultConfig {
-        applicationId "com.attendify"
+        applicationId "com.apptimates.attendify"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 1
-        versionName "1.0"
+        missingDimensionStrategy 'react-native-camera', 'mlkit'
+        versionCode 5
+        versionName "1.0.5"
     }
 
     splits {
@@ -118,6 +119,14 @@ android {
             keyAlias 'androiddebugkey'
             keyPassword 'android'
         }
+        release {
+            if (project.hasProperty('MYAPP_UPLOAD_STORE_FILE')) {
+                storeFile file(MYAPP_UPLOAD_STORE_FILE)
+                storePassword MYAPP_UPLOAD_STORE_PASSWORD
+                keyAlias MYAPP_UPLOAD_KEY_ALIAS
+                keyPassword MYAPP_UPLOAD_KEY_PASSWORD
+            }
+        }
     }
     buildTypes {
         debug {
@@ -126,7 +135,7 @@ android {
         release {
             // Caution! In production, you need to generate your own keystore file.
             // see https://reactnative.dev/docs/signed-apk-android.
-            signingConfig signingConfigs.debug
+            signingConfig signingConfigs.release
             minifyEnabled enableProguardInReleaseBuilds
             proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
         }
@@ -156,7 +165,7 @@ dependencies {
     implementation 'com.facebook.fresco:animated-webp:2.0.0'
 
     implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.0.0")
-    implementation platform('com.google.firebase:firebase-bom:31.2.3')
+    // implementation platform('com.google.firebase:firebase-bom:31.2.3')
 
     debugImplementation("com.facebook.flipper:flipper:${FLIPPER_VERSION}")
     debugImplementation("com.facebook.flipper:flipper-network-plugin:${FLIPPER_VERSION}") {
@@ -172,3 +181,4 @@ dependencies {
 }
 
 apply from: file("../../node_modules/@react-native-community/cli-platform-android/native_modules.gradle"); applyNativeModulesAppBuildGradle(project)
+apply plugin: 'com.google.android.gms.strict-version-matcher-plugin'

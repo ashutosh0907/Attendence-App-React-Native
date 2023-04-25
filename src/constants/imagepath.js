@@ -14,4 +14,7 @@ export const REMARKS = require('../assets/images/remarks.png')
 export const LOGOUT = require('../assets/images/logout.png')
 export const CROSS = require('../assets/images/cross.png')
 export const LOADER = require('../assets/images/loader.gif')
+export const ICON = require('../assets/images/icon.png');
+export const LUNCHBREAK = require('../assets/images/lunchbreak.png');
+export const SESSION = require('../assets/images/session.png');
 

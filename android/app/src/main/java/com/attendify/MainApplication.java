@@ -1,4 +1,4 @@
-package com.attendify;
+package com.apptimates.attendify;
 
 import android.app.Application;
 import com.facebook.react.PackageList;

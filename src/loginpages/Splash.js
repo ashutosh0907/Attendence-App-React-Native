@@ -14,8 +14,8 @@ export default Splash = ({ navigation }) => {
     return (
         <>
             <View style={{ flex: 1 }}>
-                <MyStatusBar backgroundColor={WHITE} barStyle={'dark-content'} />
-                <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+                <MyStatusBar backgroundColor='white' barStyle={'dark-content'} />
+                <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'white' }}>
                     <ImageBackground
                         resizeMethod="resize"
                         style={{

@@ -38,13 +38,9 @@ export default function StartScreen() {
     const [lunchString, setlunchString] = useState("");
     const [locationenabled, setLocationEnabled] = useState(false);
     const [loadermodalVisible, setloadermodalVisible] = useState(false);
-
-
-    const [hour, setHour] = useState('00')
-    const [mins, setMins] = useState('00')
-    const [sec, setSecs] = useState('00')
-    const [timer, setTimer] = useState()
-
+    const [latitude, setLatitude] = useState('')
+    const [longitude, setLongitude] = useState('')
+    const [gateway, setGateway] = useState('')
 
 
     useEffect(() => {
@@ -82,58 +78,16 @@ export default function StartScreen() {
         getLatLongGateway();
     }, [])
 
-    // useEffect(() => {
-    //     async function reflectTime() {
-    //         let t = getObjByKey('timerstatus');
-    //         console.log("hour : ", t.hour);
-    //         setHour(t.hour)
-    //         setMins(t.mins)
-    //         setSecs(t.sec)
-    //     }
-    //     reflectTime();
-    // }, [])
-
-    // function for running timer in the screen ------------------------------------
-    const startTimer = () => {
-        var timerVar = setInterval(countTimer, 1000);
-        setTimer(timerVar)
-        var totalSeconds = sec;
-        function countTimer() {
-            ++totalSeconds;
-            var hour = Math.floor(totalSeconds / 3600);
-            var minute = Math.floor((totalSeconds - hour * 3600) / 60);
-            var seconds = totalSeconds - (hour * 3600 + minute * 60);
-            if (hour < 10)
-                hour = "0" + hour;
-            if (minute < 10)
-                minute = "0" + minute;
-            if (seconds < 10)
-                seconds = "0" + seconds;
-            console.log(hour + ":" + minute + ":" + seconds)
-            // setHour(hour)
-            // setMins(minute)
-            // setSecs(seconds)
-        }
-        return timerVar;
-    }
-    // function for stopping timer in the screen ------------------------------------
-    const stopTimer = () => {
-        clearInterval(timer);
-    }
-
-
-
     const getLatLongGateway = async () => {
         try {
+            var latitude, longitude, gateway;
+            // NetworkInfo.getBSSID().then(defaultGateway => {
             NetworkInfo.getGatewayIPAddress().then(defaultGateway => {
                 gateway = defaultGateway;
+                setGateway(gateway)
             }).catch((e) => {
                 console.log(e)
             })
-        } catch (e) {
-            console.log(e);
-        }
-        try {
             let permission = getObjByKey('permission');
             if (permission) {
                 Geolocation.getCurrentPosition(
@@ -141,7 +95,10 @@ export default function StartScreen() {
                         if (position) {
                             latitude = position?.coords?.latitude;
                             longitude = position?.coords?.longitude;
+                            setLatitude(latitude)
+                            setLongitude(longitude)
                         }
+                        console.log("latitude - > ", latitude, "longitude - > ", longitude, "Gateway - >", gateway);
                     },
                     (error) => {
                         Alert.alert("Turn on the Location");
@@ -154,36 +111,27 @@ export default function StartScreen() {
             Alert.alert('Turn on the Location');
             console.log(e);
         }
-        console.log("lattttttitude ------------------", latitude)
-        console.log("longggggitude ------------------", longitude)
-        console.log("Gateway ", gateway)
-        return [latitude, longitude, gateway]
     }
 
 
     // startTime() is called whenever user clicks on START on UI
     const startTime = async () => {
-        // getLatLongGateway();
-        // getLatLongGateway();
         setloadermodalVisible(true)
         console.log("inside startTime()");
         const url = `${BASE_URL}addAttendance?_format=json`;
-        let getlatlongGateway = await getLatLongGateway();
-        console.log("start time latttttttitude----------------", getlatlongGateway[0]);
-        console.log("start time longitude----------------", getlatlongGateway[1]);
+        await getLatLongGateway();
         const obj = {
             start: isStart,
             attendance_type: 1,
-            lat: getlatlongGateway[0],
-            lng: getlatlongGateway[1],
-            gateway: getlatlongGateway[2],
+            lat: latitude,
+            lng: longitude,
+            gateway: gateway,
         }
         console.log(url)
         POSTNETWORK(url, obj, true).then(res => {
             setloadermodalVisible(false)
             console.log('res', res);
             if (res.code == 200) {
-                startTimer();
                 console.log(res)
                 setIsStart(0)
                 setCheckIsStart(true);
@@ -196,6 +144,8 @@ export default function StartScreen() {
             } else if (res.message === 'Network is not same') {
                 setloadermodalVisible(false)
                 Alert.alert('Connect to the office Wifi');
+            } else if (res.code == 400) {
+                Alert.alert(res.message, "Try again !");
             } else {
                 setloadermodalVisible(false)
                 Alert.alert('Your Attendece Is Already Marked For Today');
@@ -211,18 +161,15 @@ export default function StartScreen() {
     // Function for NORMAL_BRAKE
     // handleBrake() called whenever user clicks on Take a Brake in the UI
     const handleBrake = async (bk = isbrake) => {
-        getLatLongGateway();
-        getLatLongGateway();
         setloadermodalVisible(true)
         const url = `${BASE_URL}addAttendance?_format=json`;
-        let getlatlongGateway = await getLatLongGateway();
-        console.log("handle brake latttttttitude----------------", getlatlongGateway[0]);
+        await getLatLongGateway();
         const obj = {
             start: bk ? 0 : 1,
             attendance_type: 3,
-            lat: getlatlongGateway[0],
-            lng: getlatlongGateway[1],
-            gateway: getlatlongGateway[2],
+            lat: latitude,
+            lng: longitude,
+            gateway: gateway,
         }
         stopBackgroundService()
         POSTNETWORK(url, obj, true).then(res => {
@@ -254,18 +201,18 @@ export default function StartScreen() {
     // Function for LUNCH_BRAKE
     // handleLunchBrake() called whenever user clicks on Take Lunch Brake in the UI
     const handleLunchBrake = async () => {
-        getLatLongGateway();
-        getLatLongGateway();
+        // getLatLongGateway();
+        // getLatLongGateway();
         setloadermodalVisible(true)
         const url = `${BASE_URL}addAttendance?_format=json`;
-        let getlatlongGateway = await getLatLongGateway();
-        console.log("handle lunch brake latttttttitude----------------", getlatlongGateway[0]);
+        await getLatLongGateway();
+        // console.log("handle lunch brake latttttttitude----------------", getlatlongGateway[0]);
         const obj = {
             start: islunchbrake ? 0 : 1,
             attendance_type: 2,
-            lat: getlatlongGateway[0],
-            lng: getlatlongGateway[1],
-            gateway: getlatlongGateway[2],
+            lat: latitude,
+            lng: longitude,
+            gateway: gateway,
         }
         POSTNETWORK(url, obj, true).then(res => {
             console.log('res', res);
@@ -306,15 +253,14 @@ export default function StartScreen() {
         getLatLongGateway();
         getLatLongGateway();
         setloadermodalVisible(true);
-        let getlatlongGateway = await getLatLongGateway();
-        console.log("log out time latttttttitude----------------", getlatlongGateway[0]);
+        await getLatLongGateway();
         const url = `${BASE_URL}addAttendance?_format=json`;
         const obj = {
             start: 0,
             attendance_type: 1,
-            lat: getlatlongGateway[0],
-            lng: getlatlongGateway[1],
-            gateway: getlatlongGateway[2],
+            lat: latitude,
+            lng: longitude,
+            gateway: gateway,
         }
         console.log(url, isStart, obj);
         POSTNETWORK(url, obj, true).then(async (res) => {
@@ -358,15 +304,14 @@ export default function StartScreen() {
 
 
     const pulseCheck = async () => {
-        getLatLongGateway();
+        // await getLatLongGateway();
         console.log("Inside Pulse Check")
         const url = `${BASE_URL}checkLocation?_format=json`;
-        let getlatlongGateway = await getLatLongGateway();
-        console.log("pulse check latttttttitude----------------", getlatlongGateway[0]);
+        await getLatLongGateway();
         const obj = {
-            lat: getlatlongGateway[0],
-            lng: getlatlongGateway[1],
-            gateway: getlatlongGateway[2],
+            lat: latitude,
+            lng: longitude,
+            gateway: gateway,
         }
         stopBackgroundService()
         POSTNETWORK(url, obj, true).then(res => {
@@ -378,7 +323,7 @@ export default function StartScreen() {
             else {
                 console.log("IN ELSE GOING TO HANDLE BRAKE");
                 stopBackgroundService()
-                handleBrake(false);
+                // handleBrake(false);
             }
         }).catch(err => {
             console.log('err');
@@ -433,13 +378,6 @@ export default function StartScreen() {
     const stopBackgroundService = async () => {
         try {
             console.log("Stopped")
-            // stopTimer();
-            // const obj = {
-            //     hour: hour,
-            //     mins: mins,
-            //     sec: sec,
-            // }
-            // storeObjByKey('timerstatus', obj);
             await BackgroundService.stop();
         } catch (error) {
             console.log("Error stopping background service: ", error);
@@ -572,10 +510,10 @@ export default function StartScreen() {
                                 }}
                             >
                                 <Text style={{ alignContent: 'center', justifyContent: 'center', fontSize: 30, marginTop: 5, color: 'white', }}>END SESSION</Text>
-                                <View style={{ justifyContent: 'center', alignItems: 'center', width: WIDTH * 0.5, backgroundColor: '#1111', padding: 5, borderRadius: 10, marginVertical: 6.9 }}>
-                                    <Text style={{ color: 'black' }}>Total Working Time</Text>
-                                    <Text style={{ color: 'black' }}>{hour} : {mins} : {sec}</Text>
-                                </View>
+                                {/* <View style={{ justifyContent: 'center', alignItems: 'center', width: WIDTH * 0.5, backgroundColor: '#1111', padding: 5, borderRadius: 10, marginVertical: 6.9 }}> */}
+                                {/* <Text style={{ color: 'black' }}>Total Working Time</Text>
+                                    <Text style={{ color: 'black' }}>{hour} : {mins} : {sec}</Text> */}
+                                {/* </View> */}
                             </TouchableOpacity>}
                     </View>
                     <View style={{ flex: 1, marginVertical: 150, width: WIDTH, alignItems: 'center', justifyContent: 'center' }}>

@@ -7,10 +7,10 @@ export const POSTNETWORK = async (url, payload, token = false, content = false) 
     };
     if (token) {
         let loginRes = await getObjByKey('loginResponse');
-        console.log(loginRes.token)
+        // console.log(loginRes.token)
         headers = { ...headers, Authorization: "Bearer " + loginRes.token }
     }
-    console.log(payload)
+    // console.log(payload)
     return await fetch(url, {
         method: 'POST',
         headers: headers,
