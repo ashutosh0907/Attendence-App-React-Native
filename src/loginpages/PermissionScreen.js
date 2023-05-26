@@ -34,33 +34,25 @@ export default function PermissionScreen({ navigation }) {
             let result = await getObjByKey('loginResponse');
             setUserData(result);
         }
-        setWifi(false)
         getUserData()
-        wifiChecking();
         getLocation();
-    }, [])
-
-    useEffect(() => {
         wifiChecking();
-        getLocation();
+        getStatus();
     }, [])
-    useEffect(() => {
-        getStatus()
-    }, [wifi, locationenabled])
 
 
     useEffect(() => {
         let url = `${BASE_URL}checkYesterdayLogin?_format=json`
         GETNETWORK(url, true).then(res => {
-            // console.log('res', res);
+            console.log('res', res);
             if (res.code == 200) {
-                // console.log(res.message)
+                console.log(res.message)
             }
             else if (res.code == 201) {
                 setModalVisible(true)
             }
         }).catch(err => {
-            // console.log("ERROR", err);
+            console.log("ERROR", err);
         })
     }, [])
 
@@ -72,27 +64,32 @@ export default function PermissionScreen({ navigation }) {
             remarks: issuetext,
         }
         POSTNETWORK(url, obj, true).then(res => {
-            // console.log('res', res);
+            console.log('res', res);
             if (res.code == 200) {
-                // console.log(res.message)
+                console.log(res.message)
                 setModalVisible(false)
             }
         }).catch(err => {
-            // console.log("ERROR", err);
+            console.log("ERROR", err);
         })
     }
 
     const getStatus = async () => {
-        console.log("get status called --------------------- > ");
         let startStatus = await getObjByKey('startStatus');
         let wifiandlocationStatus = await getObjByKey('wifiStart');
-        console.log("Start Status : ", startStatus.isStarted, "wifi and locationStatus", wifiandlocationStatus.wifi, wifiandlocationStatus.location);
+        console.log('====================================');
+        console.log("wifiandlocationStatus", wifiandlocationStatus);
+        console.log('====================================');
+        // wifiChecking();
+        // getLocation();
+        // console.log("Start Status : ", typeof (startStatus.isStarted), "wifi and locationStatus", typeof (wifiandlocationStatus.wifi), typeof (wifiandlocationStatus.location));
         if (startStatus?.isStarted && wifiandlocationStatus.wifi && wifiandlocationStatus.location) {
+            console.log('====================================');
+            console.log("all conditions true");
+            console.log('====================================');
+            // let storeWifi = { wifi: false, location: false };
+            // storeObjByKey('wifiStart', storeWifi);
             navigation.navigate("DrawerStack")
-            setWifi(false)
-            setLocationEnabled(false)
-            let storeWifi = { wifi: wifi, location: locationenabled };
-            storeObjByKey('wifiStart', storeWifi);
         }
     }
 
@@ -122,10 +119,29 @@ export default function PermissionScreen({ navigation }) {
         }
     };
 
+    // function to check permissions and get Location
+    // const getLocation = () => {
+    //     const result = requestLocationPermission();
+    //     result.then(res => {
+    //         if (res) {
+    //             Geolocation.getCurrentPosition(
+    //                 position => {
+    //                     setLocation(position);
+    //                     setLocationEnabled(true);
+    //                 },
+    //                 error => {
+    //                     setLocation(false);
+    //                     console.log("inide err")
+    //                     setLocationEnabled(false);
+    //                 },
+    //                 { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000 },
+    //             );
+    //         }
+    //     });
+    // };
+
     const getLocation = () => {
-        // console.log("location");
         const result = requestLocationPermission();
-        let storeWifi = { wifi: true, location: false };
         result.then(res => {
             if (res) {
                 try {
@@ -133,11 +149,10 @@ export default function PermissionScreen({ navigation }) {
                         position => {
                             setLocation(position);
                             setLocationEnabled(true);
-                            storeWifi.location = true
-                            storeObjByKey('wifiStart', storeWifi);
                         },
                         error => {
                             setLocation(false);
+                            console.log("inside error");
                             setLocationEnabled(false);
                         },
                         { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000 }
@@ -151,30 +166,21 @@ export default function PermissionScreen({ navigation }) {
 
 
     const wifiChecking = () => {
-        // console.log('wifi')
+        console.log('wifi')
         NetInfo.fetch().then(state => {
-            let storeWifi = { wifi: wifi, location: locationenabled };
             if (state.type == 'wifi') {
-                // console.log('wifi')
+                console.log('wifi')
                 setWifi(true);
-                storeWifi.wifi = true;
-                storeObjByKey('wifiStart', storeWifi);
             } else {
                 setWifi(false);
-                storeWifi.wifi = false;
-                storeObjByKey('wifiStart', storeWifi);
-                Alert.alert('Connect to the wifi')
-                storeObjByKey('wifiStart', storeWifi);
             }
-        }).catch((error) => {
-            console.log(error);
         });
     }
 
     return (
         <>
             <MyStatusBar backgroundColor={WHITE} barStyle={'dark-content'} />
-            <ScrollView showsVerticalScrollIndicator={false}>
+            <ScrollView>
                 <View style={{ backgroundColor: 'white', marginLeft: 10 }}>
                     <Image
                         source={SPLASH}
@@ -251,7 +257,7 @@ export default function PermissionScreen({ navigation }) {
                         <View>
                             <TouchableOpacity onPress={async () => {
                                 { location && wifi ? navigation.navigate("DrawerStack") : Alert.alert("Give Requierd Permissions First !") }
-                                let storeWifi = { wifi: wifi, location: locationenabled };
+                                let storeWifi = { wifi: wifi, location: location };
                                 storeObjByKey('wifiStart', storeWifi);
                             }} style={{ width: WIDTH * 0.7, height: 45, backgroundColor: 'white', marginTop: 10, alignItems: 'center', borderRadius: 10 }}>
                                 <Text style={{ fontSize: 20, marginTop: 10, color: 'blue', fontWeight: "500" }}>Get Attendence</Text>

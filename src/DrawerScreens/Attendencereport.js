@@ -62,9 +62,9 @@ export default function Attendencereport({ navigation }) {
                 setloadermodalVisible(false);
                 getSession(date)
                 // getLunchSession(date);
-                // setModalVisible(true);
+                setModalVisible(true);
             } else {
-                // Alert.alert('No records found !');
+                Alert.alert('No records found !');
                 setloadermodalVisible(false)
                 setSessionTime('')
                 setLunchSessionTime('')
@@ -109,6 +109,7 @@ export default function Attendencereport({ navigation }) {
                 console.log("record is -- > ", record);
             }
         })
+        console.log("lunchtiming and session timing - > ",arr)
         setRecord(arr)
     }
 
@@ -132,116 +133,217 @@ export default function Attendencereport({ navigation }) {
     }
 
     return (
-        <>
-
-            <MyStatusBar backgroundColor='white' barStyle={'dark-content'} />
-            <Modal
-                animationType="fade"
-                transparent={true}
-                visible={loadermodalVisible}
-                onRequestClose={() => {
-                    // setModalVisible(!modalVisible);
-                }}>
-                <View style={styles.centeredView}>
-                    <Image
-                        style={{ height: 100, width: 100 }}
-                        source={LOADER}
-                    />
-                </View>
-            </Modal>
-            <View style={{ width: WIDTH, backgroundColor: 'white' }}>
-                <TouchableOpacity style={{
-                    height: 60, width: 60,
-                }} onPress={() => {
-                    setSelected('')
-                    setSessionTime('')
-                    setLunchSessionTime('')
-                    setNoRecords('')
-                    navigation.goBack();
-                }}>
-                    <Image
-                        style={{ height: 50, width: 50, margin: 15 }}
-                        source={BACK}
-                    />
-                </TouchableOpacity>
-            </View>
-            <View style={{ ...styles.mainView }}>
-                <View style={{
-                    height: HEIGHT * 0.4,
-                    width: WIDTH * 0.9,
-                    position: 'absolute',
-                    bottom: HEIGHT * 0.36,
-                    justifyContent: 'center',
-                    alignItems: 'center'
-                }}>
-                    <View style={{
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                        marginVertical: 10
+                <>
+            <MyStatusBar backgroundColor={WHITE} barStyle={'dark-content'} />
+            <View style={{ flex: 1, backgroundColor: 'white' }}>
+                <View style={{ backgroundColor: 'white', width: WIDTH * 0.2 }}>
+                    <TouchableOpacity onPress={() => {
+                        navigation.navigate("StartScreen")
                     }}>
-                        <Text style={{ color: BLACK, fontSize: 20 }}>Select a date to view report !</Text>
+                        <Image
+                            style={{ height: 50, width: 50, margin: 15 }}
+                            source={BACK}
+                        />
+                    </TouchableOpacity>
+                </View>
+                <View style={{ justifyContent: 'center', alignItems: 'center', marginVertical: 100 }}>
+                    <View><Text style={{ color: 'grey', fontSize: 27, fontWeight: '600' }}>Attendence Report</Text></View>
+                    <Modal
+                        animationType="fade"
+                        transparent={true}
+                        visible={loadermodalVisible}
+                        onRequestClose={() => {
+                            // setModalVisible(!modalVisible);
+                        }}>
+                        <View style={styles.centeredView}>
+                            <Image
+                                style={{ height: 100, width: 100 }}
+                                source={LOADER}
+                            />
+                        </View>
+                    </Modal>
+                    <Modal
+                        animationType="fade"
+                        transparent={true}
+                        visible={modalVisible}
+                        onRequestClose={() => {
+                            setModalVisible(!modalVisible);
+                        }}>
+                        <View
+                            activeOpacity={1}
+                            onPress={() => setModalVisible(false)}
+                            style={styles.centeredView}>
+                            <View style={styles.modalView}>
+                                <ScrollView showsVerticalScrollIndicator={true} style={{}}>{res.length > 0 && res.map((record, index) => {
+                                    if (record?.attendance_remark != "") {
+                                        // setRemark(record.attendance_remark)
+                                        r = (record.attendance_remark)
+                                    }
+                                    return <View key={index}>
+                                        <Text style={{ color: 'black' }}>{getHeading(record.attendance_type)}</Text>
+                                        <Text style={{ color: getColor(record.attendance_type), margin: 10 }}>
+                                            Start: {moment(record.attendance_start).format("hh:mm:ss") + " "} End:{moment(record.attendance_end).format("hh:mm:ss")}
+                                        </Text>
+                                        {/* { <View style={{ backgroundColor: "red" }}> <Text style={{ color: "white" }}>{record.attendance_remark}</Text></View> : null} */}
+                                    </View>
+                                })}</ScrollView>
+                                <View>
+                                    {r ?
+                                        <View style={{ backgroundColor: 'red', padding: 20, borderRadius: 10 }}>
+                                            <Text style={{ fontSize: 15, color: 'black' }}>Last Logout Faliure Remarks</Text>
+                                            <Text style={{ fontSize: 25, color: 'black' }}>{r}</Text>
+                                        </View> : null
+                                    }
+                                </View>
+                                <Pressable
+                                    style={[styles.button, styles.buttonClose]}
+                                    onPress={() => setModalVisible(!modalVisible)}>
+                                    <Text style={styles.textStyle}>Close</Text>
+                                </Pressable>
+                            </View>
+                        </View>
+                    </Modal>
+                    <View style={{ marginVertical: 40, justifyContent: 'center', alignItems: 'center' }}>
+                        <Text style={{ color: 'black', fontSize: 20 }}>Pick a date to get Attendece Report </Text>
+                        <DatePicker
+                            style={styles.datePickerStyle}
+                            date={date} //initial date from state
+                            mode="date" //The enum of date, datetime and time
+                            // placeholder="select date"
+                            textColor='black'
+                            format="DD-MM-YYYY"
+                            minimumDate={new Date("2013-01-01")}
+                            maxDate="01-01-2045"
+                            onDateChange={(date) => {
+                                console.log("date is ---------------- > ", date);
+                                setDate(date);
+                            }}
+                        />
                     </View>
-                    <Calendar
-                        style={{
-                            borderColor: 'gray',
-                            height: HEIGHT * 0.4,
-                            width: WIDTH * 0.9,
-                            borderRadius: 10,
-                            elevation: 10
-                        }}
-                        onDayPress={day => {
-                            console.log("day selected is ----------- > ", day)
-                            setSelected(day.dateString);
-                            let dat=moment(day.dateString).format("YYYY/MM/DD")
-                            setDate(dat) 
-                            // console.log("date is ----------- > ", date)
-                            getAttendance(dat)
-                            getStatus();
-                            // console.log("record is -------- > ", record);
-                        }}
-                        
-                        // onDayLongPress={(day) => console.log('onDayLongPress', day)}
-                        markedDates={{
-                            [selected]: { selected: true, disableTouchEvent: true, selectedColor: 'green' },
-                            ['2023-04-28']: {selected: true, disableTouchEvent: true, selectedColor: 'red'},
-                            ['2023-04-29']: {selected: true, disableTouchEvent: true, selectedColor: 'red'},
-                        }}
-                    />
-
-                   {sessiontime != '' || lunchsessiontime != '' ?  
-                   <LinearGradient colors={['#FFFFFF', '#E2E2E2']} style={{  width: WIDTH * 0.9, marginVertical: 10, height: HEIGHT * 0.08, flexDirection: 'column', borderWidth:1, borderColor:'gray', borderRadius:6, backgroundColor:'red', padding:4, justifyContent:'center', alignItems:'center' }}>
-                        <View style={{ flexDirection: 'row', width: WIDTH * 0.82, height: HEIGHT * 0.03, margin:1, justifyContent:'space-between' }}>
-                            
-                            <View style={{ height: 30, width:WIDTH*0.3, flexDirection:'row', justifyContent:'space-between'}}>
-                                <View>
-                                <Image style={{ height: 26, width: 26 }} source={SESSION} />
-                                </View>
-                                <Text style={{ ...styles.textStyle, fontSize: 18, }}>Session : </Text>
-                            </View>
-                            <View style={{ height: 30,width:WIDTH*0.69,}}>
-                                <Text style={{ ...styles.textStyle, fontSize: 18, }}>{sessiontime} </Text>
-                            </View>
-                        </View>
-                        <View style={{ flexDirection: 'row', width: WIDTH * 0.82, height: HEIGHT * 0.03, margin:1, justifyContent:'space-between' }}>
-                            
-                            <View style={{ height: 30, width:WIDTH*0.4, flexDirection:'row', justifyContent:'space-between'}}>
-                                <View>
-                                <Image style={{ height: 26, width: 26 }} source={LUNCHBREAK} />
-                                </View>
-                                <Text style={{ ...styles.textStyle, fontSize: 18, }}>Lunch Break : </Text>
-                            </View>
-                            <View style={{ height: 30,width:WIDTH*0.5, }}>
-                                <Text style={{ ...styles.textStyle, fontSize: 18, }}>{lunchsessiontime} </Text>
-                            </View>
-                        </View>
-
-                    </LinearGradient> : <>
-                    <View style={{padding:10}}>
-                        <Text style={{color:'black', fontSize:20}}>{norecords}</Text>
-                    </View></>}
+                    <TouchableOpacity
+                        onPress={() => {
+                            let dt = moment(date).format("YYYY/MM/DD")
+                            console.log("formated date is ------------ > ", dt);
+                            setloadermodalVisible(true);
+                            getAttendance(dt)
+                            // setModalVisible(true);
+                            // console.log(date)
+                        }} style={styles.touchableOpacityStyle}>
+                        <Text style={{ color: 'white' }}>Show Details</Text>
+                    </TouchableOpacity>
                 </View>
             </View>
         </>
+        // <>
+
+        //     <MyStatusBar backgroundColor='white' barStyle={'dark-content'} />
+        //     <Modal
+        //         animationType="fade"
+        //         transparent={true}
+        //         visible={loadermodalVisible}
+        //         onRequestClose={() => {
+        //             // setModalVisible(!modalVisible);
+        //         }}>
+        //         <View style={styles.centeredView}>
+        //             <Image
+        //                 style={{ height: 100, width: 100 }}
+        //                 source={LOADER}
+        //             />
+        //         </View>
+        //     </Modal>
+        //     <View style={{ width: WIDTH, backgroundColor: 'white' }}>
+        //         <TouchableOpacity style={{
+        //             height: 60, width: 60,
+        //         }} onPress={() => {
+        //             setSelected('')
+        //             setSessionTime('')
+        //             setLunchSessionTime('')
+        //             setNoRecords('')
+        //             navigation.goBack();
+        //         }}>
+        //             <Image
+        //                 style={{ height: 50, width: 50, margin: 15 }}
+        //                 source={BACK}
+        //             />
+        //         </TouchableOpacity>
+        //     </View>
+        //     <View style={{ ...styles.mainView }}>
+        //         <View style={{
+        //             height: HEIGHT * 0.4,
+        //             width: WIDTH * 0.9,
+        //             position: 'absolute',
+        //             bottom: HEIGHT * 0.36,
+        //             justifyContent: 'center',
+        //             alignItems: 'center'
+        //         }}>
+        //             <View style={{
+        //                 justifyContent: 'center',
+        //                 alignItems: 'center',
+        //                 marginVertical: 10
+        //             }}>
+        //                 <Text style={{ color: BLACK, fontSize: 20 }}>Select a date to view report !</Text>
+        //             </View>
+        //             <Calendar
+        //                 style={{
+        //                     borderColor: 'gray',
+        //                     height: HEIGHT * 0.4,
+        //                     width: WIDTH * 0.9,
+        //                     borderRadius: 10,
+        //                     elevation: 10
+        //                 }}
+        //                 onDayPress={day => {
+        //                     console.log("day selected is ----------- > ", day)
+        //                     setSelected(day.dateString);
+        //                     let dat=moment(day.dateString).format("YYYY/MM/DD")
+        //                     setDate(dat) 
+        //                     // console.log("date is ----------- > ", date)
+        //                     getAttendance(dat)
+        //                     getStatus();
+        //                     // console.log("record is -------- > ", record);
+        //                 }}
+                        
+        //                 // onDayLongPress={(day) => console.log('onDayLongPress', day)}
+        //                 markedDates={{
+        //                     [selected]: { selected: true, disableTouchEvent: true, selectedColor: 'green' },
+        //                     ['2023-04-28']: {selected: true, disableTouchEvent: true, selectedColor: 'red'},
+        //                     ['2023-04-29']: {selected: true, disableTouchEvent: true, selectedColor: 'red'},
+        //                 }}
+        //             />
+
+        //            {sessiontime != '' || lunchsessiontime != '' ?  
+        //            <LinearGradient colors={['#FFFFFF', '#E2E2E2']} style={{  width: WIDTH * 0.9, marginVertical: 10, height: HEIGHT * 0.08, flexDirection: 'column', borderWidth:1, borderColor:'gray', borderRadius:6, backgroundColor:'red', padding:4, justifyContent:'center', alignItems:'center' }}>
+        //                 <View style={{ flexDirection: 'row', width: WIDTH * 0.82, height: HEIGHT * 0.03, margin:1, justifyContent:'space-between' }}>
+                            
+        //                     <View style={{ height: 30, width:WIDTH*0.3, flexDirection:'row', justifyContent:'space-between'}}>
+        //                         <View>
+        //                         <Image style={{ height: 26, width: 26 }} source={SESSION} />
+        //                         </View>
+        //                         <Text style={{ ...styles.textStyle, fontSize: 18, }}>Session : </Text>
+        //                     </View>
+        //                     <View style={{ height: 30,width:WIDTH*0.69,}}>
+        //                         <Text style={{ ...styles.textStyle, fontSize: 18, }}>{sessiontime} </Text>
+        //                     </View>
+        //                 </View>
+        //                 <View style={{ flexDirection: 'row', width: WIDTH * 0.82, height: HEIGHT * 0.03, margin:1, justifyContent:'space-between' }}>
+                            
+        //                     <View style={{ height: 30, width:WIDTH*0.4, flexDirection:'row', justifyContent:'space-between'}}>
+        //                         <View>
+        //                         <Image style={{ height: 26, width: 26 }} source={LUNCHBREAK} />
+        //                         </View>
+        //                         <Text style={{ ...styles.textStyle, fontSize: 18, }}>Lunch Break : </Text>
+        //                     </View>
+        //                     <View style={{ height: 30,width:WIDTH*0.5, }}>
+        //                         <Text style={{ ...styles.textStyle, fontSize: 18, }}>{lunchsessiontime} </Text>
+        //                     </View>
+        //                 </View>
+
+        //             </LinearGradient> : <>
+        //             <View style={{padding:10}}>
+        //                 <Text style={{color:'black', fontSize:20}}>{norecords}</Text>
+        //             </View></>}
+        //         </View>
+        //     </View>
+        // </>
     )
 }
 const styles = StyleSheet.create({

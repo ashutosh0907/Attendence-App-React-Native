@@ -11,6 +11,7 @@ import { useEffect } from "react";
 import { PermissionsAndroid } from "react-native";
 import { HEIGHT, MyStatusBar, WIDTH } from "../constants/config";
 import { BACK, LOADER, LUNCHBREAK, SESSION, SPLASH } from '../constants/imagepath'
+import { BLACK, WHITE } from "../constants/color";
 const Remarks = ({ navigation, route }) => {
     const [camerastate, setcamerastate] = useState(true);
     const [scanned, setscanned] = useState(false)
@@ -146,7 +147,7 @@ const Remarks = ({ navigation, route }) => {
                         </View>
                         {
                             camerastate &&
-                            <View style={{ width: WIDTH, height: HEIGHT * 0.5, justifyContent: 'center', alignItems: 'center' }}>
+                            <View style={{ width: WIDTH, height: HEIGHT * 0.5, justifyContent: 'center', alignItems: 'center', backgroundColor: WHITE }}>
                                 <RNCamera
                                     autoFocus="on"
                                     ratio="4:4"

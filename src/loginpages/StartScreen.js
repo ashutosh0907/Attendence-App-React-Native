@@ -322,8 +322,8 @@ export default function StartScreen() {
             }
             else {
                 console.log("IN ELSE GOING TO HANDLE BRAKE");
-                stopBackgroundService()
-                // handleBrake(false);
+                stopBackgroundService();
+                handleBrake(false);
             }
         }).catch(err => {
             console.log('err');
